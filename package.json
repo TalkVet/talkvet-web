@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Protótipo VetCare Pro - Sistema de Gestão Veterinária",
   "scripts": {
-    "start": "serve -s . -l $PORT"
+    "start": "serve . -l $PORT"
   },
   "dependencies": {
     "serve": "^14.2.4"

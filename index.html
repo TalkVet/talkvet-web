@@ -1,11 +1,2396 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=/prototipo_vetcare.html">
-  <title>VetCare Pro</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetCare Pro — Sistema de Gestão Veterinária</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --navy:    #0f2744;
+    --navy2:   #1a3a5c;
+    --blue:    #2563eb;
+    --blue2:   #3b82f6;
+    --sky:     #e8f2ff;
+    --sky2:    #dbeafe;
+    --teal:    #0d9488;
+    --green:   #16a34a;
+    --amber:   #d97706;
+    --red:     #dc2626;
+    --slate:   #64748b;
+    --slate2:  #94a3b8;
+    --border:  #e2e8f0;
+    --border2: #cbd5e1;
+    --bg:      #f8fafc;
+    --white:   #ffffff;
+    --text:    #0f172a;
+    --text2:   #334155;
+    --sidebar: 240px;
+    --radius:  10px;
+    --shadow:  0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+    --shadow2: 0 2px 8px rgba(37,99,235,.15), 0 8px 32px rgba(37,99,235,.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── SIDEBAR ─────────────────────────────────────────────── */
+  .sidebar {
+    width: var(--sidebar);
+    background: var(--navy);
+    display: flex; flex-direction: column;
+    flex-shrink: 0; height: 100vh;
+    position: relative; z-index: 50;
+  }
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .logo-mark {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px; background: var(--blue);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .logo-text { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 15px; color: #fff; line-height: 1.1; }
+  .logo-sub { font-size: 10px; color: rgba(255,255,255,.45); font-weight: 400; letter-spacing: .04em; text-transform: uppercase; }
+
+  .sidebar-section { padding: 20px 12px 8px; }
+  .sidebar-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.3); font-weight: 600; padding: 0 8px; margin-bottom: 6px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 7px; cursor: pointer;
+    color: rgba(255,255,255,.55); font-size: 13px; font-weight: 500;
+    transition: all .18s ease; margin-bottom: 2px; position: relative;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.9); }
+  .nav-item.active { background: rgba(37,99,235,.25); color: #fff; }
+  .nav-item svg { opacity: .65; }
+  .nav-item.active svg, .nav-item:hover svg { opacity: 1; }
+  .nav-item.active::before {
+    content: ''; position: absolute; left: 0; top: 6px; bottom: 6px;
+    width: 3px; background: var(--blue2); border-radius: 0 2px 2px 0;
+  }
+  .nav-icon { width: 17px; text-align: center; font-size: 15px; }
+  .nav-badge {
+    margin-left: auto; background: var(--blue); color: #fff;
+    font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px;
+  }
+
+  .sidebar-footer {
+    margin-top: auto; padding: 16px 12px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  .user-card {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+    border-radius: 8px; cursor: pointer;
+  }
+  .user-card:hover { background: rgba(255,255,255,.06); }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--teal));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .user-name { font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,.9); line-height: 1.2; }
+  .user-role { font-size: 10.5px; color: rgba(255,255,255,.4); }
+
+  /* ── MAIN ─────────────────────────────────────────────────── */
+  .main {
+    flex: 1; display: flex; flex-direction: column;
+    overflow: hidden; min-width: 0;
+  }
+
+  /* ── TOPBAR ───────────────────────────────────────────────── */
+  .topbar {
+    height: 58px; background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 24px; gap: 16px;
+    flex-shrink: 0;
+  }
+  .page-title { font-family: 'Inter', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); }
+  .breadcrumb { font-size: 12px; color: var(--slate2); margin-left: 4px; }
+  .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 7px 12px; width: 220px;
+    font-size: 12.5px; color: var(--slate);
+    transition: border-color .15s;
+  }
+  .search-box:focus-within { border-color: var(--blue2); background: #fff; }
+  .search-box input { border: none; background: none; outline: none; font-size: 12.5px; color: var(--text); width: 100%; font-family: inherit; }
+  .search-box input::placeholder { color: var(--slate2); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 8px; font-size: 12.5px;
+    font-weight: 600; cursor: pointer; border: none;
+    font-family: 'Inter', sans-serif; transition: all .15s ease;
+  }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: var(--shadow2); }
+  .btn-outline { background: #fff; color: var(--navy2); border: 1.5px solid var(--border2); }
+  .btn-outline:hover { border-color: var(--blue2); color: var(--blue); background: var(--sky); }
+  .btn-sm { padding: 5px 10px; font-size: 11.5px; }
+  .btn-ghost { background: none; color: var(--slate); border: none; }
+  .btn-ghost:hover { background: var(--bg); color: var(--text); }
+
+  .icon-btn {
+    width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--white); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px; transition: all .15s; color: var(--slate);
+  }
+  .icon-btn:hover { border-color: var(--blue2); color: var(--blue); background: var(--sky); }
+  .notif-dot { position: relative; }
+  .notif-dot::after {
+    content: ''; position: absolute; top: 6px; right: 6px;
+    width: 7px; height: 7px; border-radius: 50%; background: var(--red);
+    border: 1.5px solid #fff;
+  }
+
+  /* ── CONTENT ──────────────────────────────────────────────── */
+  .content {
+    flex: 1; overflow-y: auto; padding: 24px;
+    scroll-behavior: smooth; min-height: 0;
+  }
+  .page { display: none; animation: fadeIn .25s ease; min-height: 0; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: none; } }
+
+  /* ── CARDS GRID ───────────────────────────────────────────── */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px;
+    box-shadow: var(--shadow); transition: transform .2s, box-shadow .2s;
+    position: relative; overflow: hidden;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+  .stat-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .stat-card.blue::after { background: var(--blue); }
+  .stat-card.teal::after { background: var(--teal); }
+  .stat-card.green::after { background: var(--green); }
+  .stat-card.amber::after { background: var(--amber); }
+
+  .stat-label { font-size: 11.5px; color: var(--slate); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+  .stat-value { font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; }
+  .stat-sub { font-size: 11px; color: var(--slate2); margin-top: 6px; }
+  .stat-icon { position: absolute; top: 16px; right: 18px; font-size: 26px; opacity: .12; }
+  .stat-trend { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; margin-top: 6px; }
+  .stat-trend.up { color: var(--green); }
+  .stat-trend.down { color: var(--red); }
+
+  /* ── GRID LAYOUT ──────────────────────────────────────────── */
+  .two-col { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+  .three-col { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .full-row { margin-bottom: 12px; }
+  /* ── CARD BASE ────────────────────────────────────────────── */
+  .card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+  }
+  .card-title { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); }
+  .card-subtitle { font-size: 11.5px; color: var(--slate2); margin-top: 1px; }
+  .card-body { padding: 16px 20px; }
+
+  /* ── TABLE ────────────────────────────────────────────────── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th {
+    text-align: left; padding: 10px 14px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--slate);
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .12s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--sky); }
+  tbody td { padding: 11px 14px; color: var(--text2); vertical-align: middle; }
+  .td-bold { font-weight: 600; color: var(--text); }
+
+  /* ── BADGES ───────────────────────────────────────────────── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: 20px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: .02em;
+  }
+  .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+  .badge-green  { background: #dcfce7; color: #15803d; }
+  .badge-amber  { background: #fef3c7; color: #92400e; }
+  .badge-red    { background: #fee2e2; color: #b91c1c; }
+  .badge-gray   { background: #f1f5f9; color: #475569; }
+  .badge-teal   { background: #ccfbf1; color: #0f766e; }
+  .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  /* ── FORM ─────────────────────────────────────────────────── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; font-weight: 600; color: var(--text2); }
+  .req { color: var(--red); margin-left: 2px; }
+  input[type=text], input[type=email], input[type=date], input[type=number],
+  select, textarea {
+    border: 1.5px solid var(--border2); border-radius: 7px;
+    padding: 8px 11px; font-size: 13px; font-family: inherit;
+    color: var(--text); background: var(--white); outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--blue2); box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+  .input-hint { font-size: 11px; color: var(--slate2); }
+
+  /* ── SECTION DIVIDER ──────────────────────────────────────── */
+  .section-bar {
+    display: flex; align-items: center; gap: 12px; margin: 20px 0 14px;
+  }
+  .section-bar h3 { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; color: var(--navy2); white-space: nowrap; }
+  .section-bar::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── TIMELINE ─────────────────────────────────────────────── */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .tl-item {
+    display: flex; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--border); position: relative;
+  }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-dot {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; margin-top: 1px;
+  }
+  .tl-dot.blue { background: var(--sky2); color: var(--blue); }
+  .tl-dot.green { background: #dcfce7; color: var(--green); }
+  .tl-dot.amber { background: #fef3c7; color: var(--amber); }
+  .tl-text { font-size: 12.5px; color: var(--text2); line-height: 1.4; }
+  .tl-time { font-size: 11px; color: var(--slate2); margin-top: 2px; }
+
+  /* ── CHART BARS ───────────────────────────────────────────── */
+  .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 90px; margin-top: 8px; }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar { border-radius: 4px 4px 0 0; width: 100%; transition: opacity .2s; cursor: default; }
+  .bar:hover { opacity: .75; }
+  .bar-label { font-size: 10px; color: var(--slate2); }
+
+  /* ── LAUDO EDITOR ─────────────────────────────────────────── */
+  .editor-toolbar {
+    display: flex; gap: 4px; padding: 8px 12px;
+    border-bottom: 1px solid var(--border); flex-wrap: wrap;
+    background: var(--bg); border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .tool-btn {
+    padding: 5px 8px; border: 1px solid transparent; border-radius: 5px;
+    cursor: pointer; font-size: 13px; background: none; color: var(--slate);
+    font-family: inherit; transition: all .12s;
+  }
+  .tool-btn:hover { background: var(--white); border-color: var(--border); color: var(--text); }
+  .tool-sep { width: 1px; background: var(--border); margin: 4px 4px; }
+  .editor-body {
+    min-height: 200px; padding: 16px;
+    font-size: 13px; line-height: 1.7; color: var(--text2);
+  }
+
+  /* ── STATUS STEPPER ───────────────────────────────────────── */
+  .stepper { display: flex; align-items: center; gap: 0; margin: 16px 0; }
+  .step {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    flex: 1; position: relative;
+  }
+  .step:not(:last-child)::after {
+    content: ''; position: absolute; top: 14px; left: 60%; right: -40%;
+    height: 2px; background: var(--border);
+  }
+  .step.done:not(:last-child)::after { background: var(--blue); }
+  .step-dot {
+    width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border);
+    background: var(--white); display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: var(--slate2); z-index: 1;
+  }
+  .step.done .step-dot { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .step.current .step-dot { border-color: var(--blue); color: var(--blue); box-shadow: 0 0 0 4px var(--sky2); }
+  .step-label { font-size: 10px; font-weight: 600; color: var(--slate2); text-align: center; }
+  .step.done .step-label, .step.current .step-label { color: var(--blue); }
+
+  /* ── PILL TABS ────────────────────────────────────────────── */
+  .tabs { display: flex; gap: 4px; padding: 4px; background: var(--bg); border-radius: 9px; margin-bottom: 18px; }
+  .tab {
+    padding: 7px 16px; border-radius: 7px; cursor: pointer;
+    font-size: 12.5px; font-weight: 500; color: var(--slate);
+    border: none; background: none; font-family: inherit; transition: all .15s;
+  }
+  .tab.active { background: var(--white); color: var(--blue); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+
+  /* ── PATIENT CARD ─────────────────────────────────────────── */
+  .patient-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .patient-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 16px; cursor: pointer;
+    transition: all .18s; position: relative; overflow: hidden;
+  }
+  .patient-card:hover { border-color: var(--blue2); box-shadow: 0 4px 16px rgba(37,99,235,.12); transform: translateY(-2px); }
+  .patient-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .species-icon {
+    width: 42px; height: 42px; border-radius: 10px; background: var(--sky);
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+    flex-shrink: 0;
+  }
+  .patient-name { font-weight: 700; font-size: 14px; color: var(--text); }
+  .patient-breed { font-size: 11.5px; color: var(--slate); }
+  .patient-info { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+  .info-item { font-size: 11px; }
+  .info-label { color: var(--slate2); }
+  .info-value { font-weight: 600; color: var(--text2); }
+
+  /* ── FINANCE ──────────────────────────────────────────────── */
+  .finance-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .finance-row:last-child { border-bottom: none; }
+  .finance-name { font-size: 13px; font-weight: 500; color: var(--text2); }
+  .finance-sub { font-size: 11px; color: var(--slate2); }
+  .finance-value { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; }
+  .finance-value.pos { color: var(--green); }
+  .finance-value.pend { color: var(--amber); }
+
+  /* ── EMPTY STATE ──────────────────────────────────────────── */
+  .empty { text-align: center; padding: 40px 20px; color: var(--slate2); }
+  .empty-icon { font-size: 40px; margin-bottom: 10px; opacity: .4; }
+  .empty-title { font-size: 14px; font-weight: 600; color: var(--slate); margin-bottom: 4px; }
+
+  /* ── MODAL ─────────────────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(15,23,42,.45);
+    z-index: 1000; display: flex; align-items: center; justify-content: center;
+    padding: 24px; backdrop-filter: blur(2px);
+  }
+  .modal-box {
+    background: var(--white); border-radius: 12px; width: 100%; max-width: 560px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25); max-height: 85vh; overflow-y: auto;
+    animation: slideModal .25s ease;
+  }
+  @keyframes slideModal { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 22px; border-bottom: 1px solid var(--border);
+  }
+  .modal-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .modal-close {
+    background: none; border: none; cursor: pointer; color: var(--slate2);
+    padding: 4px; border-radius: 6px; display: flex;
+  }
+  .modal-close:hover { color: var(--text); background: var(--bg); }
+  .modal-body { padding: 20px 22px; }
+  .modal-delete .modal-box { max-width: 400px; }
+  .modal-delete .btn-danger { background: var(--red); color: #fff; }
+  .modal-delete .btn-danger:hover { background: #b91c1c; }
+
+  /* ── CHART CONTAINERS ───────────────────────────────────────── */
+  .chart-container { position: relative; height: 220px; }
+  .chart-container.pie { height: 260px; }
+
+  /* ── LOGIN SCREEN ──────────────────────────────────────────── */
+  .login-screen {
+    position: fixed; inset: 0; z-index: 999;
+    background: var(--bg);
+    display: flex; align-items: stretch;
+    transition: opacity .4s ease;
+  }
+  .login-screen.hidden { opacity: 0; pointer-events: none; }
+  .login-left {
+    flex: 1; display: flex; flex-direction: column; justify-content: center;
+    padding: 48px 60px; max-width: 520px; min-width: 380px;
+  }
+  .login-right {
+    flex: 1; margin: 16px 16px 16px 0; border-radius: 16px; overflow: hidden;
+    background: var(--navy); position: relative;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 0;
+  }
+  .login-right-placeholder {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; color: rgba(255,255,255,.3); text-align: center; padding: 40px;
+  }
+  .login-right-placeholder svg { opacity: .25; }
+  .login-right-placeholder span { font-size: 13px; font-weight: 500; }
+  .login-right img {
+    width: 100%; height: 100%; object-fit: cover;
+    position: absolute; inset: 0;
+  }
+  .login-logo {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 40px;
+  }
+  .login-logo .logo-icon { width: 40px; height: 40px; font-size: 20px; }
+  .login-logo .logo-text { font-size: 18px; color: var(--navy); }
+  .login-logo .logo-sub { color: var(--slate); }
+  .login-left h2 {
+    font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 800;
+    color: var(--text); margin-bottom: 8px; line-height: 1.2;
+  }
+  .login-left .login-sub {
+    font-size: 14px; color: var(--slate); margin-bottom: 32px; line-height: 1.5;
+  }
+  .login-left .form-group { margin-bottom: 18px; }
+  .login-left .form-group label { font-size: 13px; font-weight: 600; color: var(--text2); }
+  .login-left input[type=email], .login-left input[type=password] {
+    width: 100%; padding: 12px 14px; font-size: 14px;
+    border-radius: 9px; border: 1.5px solid var(--border2);
+  }
+  .profile-selector { display: flex; gap: 10px; margin-bottom: 24px; }
+  .profile-option {
+    flex: 1; padding: 14px 12px; border: 2px solid var(--border);
+    border-radius: 10px; cursor: pointer; text-align: center;
+    transition: all .15s; background: var(--white);
+  }
+  .profile-option:hover { border-color: var(--blue2); background: var(--sky); }
+  .profile-option.selected { border-color: var(--blue); background: var(--sky); }
+  .profile-option .profile-icon { margin-bottom: 6px; }
+  .profile-option .profile-label { font-size: 12.5px; font-weight: 600; color: var(--text); }
+  .profile-option .profile-desc { font-size: 10.5px; color: var(--slate); margin-top: 2px; }
+  .btn-login {
+    width: 100%; padding: 13px; font-size: 14px; font-weight: 700;
+    border-radius: 10px; margin-top: 6px; background: var(--navy); color: #fff;
+    border: none; cursor: pointer; font-family: 'Inter', sans-serif;
+    transition: all .15s;
+  }
+  .btn-login:hover { background: #0a1f38; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(15,39,68,.3); }
+  .login-forgot {
+    text-align: right; margin-bottom: 6px;
+  }
+  .login-forgot a { font-size: 12.5px; color: var(--blue); text-decoration: none; font-weight: 600; }
+  .login-forgot a:hover { text-decoration: underline; }
+  .login-footer {
+    text-align: center; margin-top: 28px; font-size: 11.5px; color: var(--slate2);
+    padding-top: 20px; border-top: 1px solid var(--border);
+  }
+
+  /* ── CLINIC PORTAL (sidebar variant) ──────────────────────── */
+  .sidebar.clinic-mode .sidebar-label { display: none; }
+  .sidebar.clinic-mode .nav-item[data-admin-only] { display: none; }
+  .clinic-banner {
+    background: linear-gradient(135deg, rgba(13,148,136,.15), rgba(37,99,235,.1));
+    border: 1px solid rgba(13,148,136,.25); border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .clinic-banner-icon { font-size: 28px; flex-shrink: 0; }
+  .clinic-banner-text { font-size: 12.5px; color: var(--text2); line-height: 1.5; }
+  .clinic-banner-text strong { color: var(--teal); }
+
+  /* ── TOOLTIP FIGMA NOTE ───────────────────────────────────── */
+  .figma-banner {
+    background: linear-gradient(135deg, #1e1e2e, #2d1b69);
+    border-radius: 10px; padding: 12px 18px;
+    display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+    border: 1px solid rgba(139,92,246,.3);
+  }
+  .figma-icon { font-size: 22px; flex-shrink: 0; }
+  .figma-text { font-size: 12px; color: rgba(255,255,255,.75); line-height: 1.5; }
+  .figma-text strong { color: #a78bfa; }
+  .figma-close { margin-left: auto; cursor: pointer; color: rgba(255,255,255,.4); font-size: 18px; flex-shrink: 0; }
+  .figma-close:hover { color: rgba(255,255,255,.8); }
+</style>
 </head>
 <body>
-  <p>Redirecionando... <a href="/prototipo_vetcare.html">Clique aqui</a> se não for redirecionado.</p>
+
+<!-- ══ LOGIN SCREEN ════════════════════════════════════════════════════ -->
+<div class="login-screen" id="login-screen">
+  <!-- LEFT: Form -->
+  <div class="login-left">
+    <div class="login-logo">
+      <div class="logo-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
+      <div>
+        <div class="logo-text">VetCare Pro</div>
+        <div class="logo-sub">Diagnósticos Veterinários</div>
+      </div>
+    </div>
+
+    <h2>Bem-vindo de volta</h2>
+    <div class="login-sub">Acesse sua conta para gerenciar<br>exames, laudos e serviços.</div>
+
+    <div class="form-group">
+      <label>Perfil de Acesso</label>
+      <div class="profile-selector">
+        <div class="profile-option selected" onclick="selectProfile('admin', this)">
+          <div class="profile-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/><path d="M15 3.5a2.5 2.5 0 0 1 0 5"/></svg></div>
+          <div class="profile-label">Administrador</div>
+          <div class="profile-desc">Acesso total ao sistema</div>
+        </div>
+        <div class="profile-option" onclick="selectProfile('clinica', this)">
+          <div class="profile-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <div class="profile-label">Clínica</div>
+          <div class="profile-desc">Laudos e exames próprios</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@email.com" value="admin@vetcare.com">
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="login-password" placeholder="Mínimo 8 caracteres" value="••••••••">
+    </div>
+    <div class="login-forgot"><a href="#">Esqueceu a senha?</a></div>
+
+    <button class="btn-login" onclick="doLogin()">Entrar</button>
+
+    <div class="login-footer">&copy; 2026 VetCare Pro. Todos os direitos reservados.</div>
+  </div>
+
+  <!-- RIGHT: Media placeholder (adicione sua imagem/vídeo aqui) -->
+  <div class="login-right">
+    <!-- Substitua este bloco pelo seu conteúdo: <img src="sua-imagem.jpg" alt=""> -->
+    <div class="login-right-placeholder">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+      <span>Adicione sua mídia aqui</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SIDEBAR ═════════════════════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
+      <div>
+        <div class="logo-text">VetCare Pro</div>
+        <div class="logo-sub">Diagnósticos</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Principal</div>
+    <button class="nav-item active" onclick="goTo('dashboard', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Dashboard
+    </button>
+    <button class="nav-item" onclick="goTo('exames', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> Exames
+      <span class="nav-badge">3</span>
+    </button>
+    <button class="nav-item" onclick="goTo('laudos', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Laudos
+    </button>
+    <button class="nav-item" onclick="goTo('financeiro', this)" data-admin-only>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Financeiro
+    </button>
+    <button class="nav-item" onclick="goTo('relatorios', this)" data-admin-only>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Relatórios
+    </button>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Cadastros</div>
+    <button class="nav-item" onclick="goTo('cadastros', this)" data-admin-only>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Clínicas
+    </button>
+    <button class="nav-item" onclick="goTo('pacientes', this)" data-admin-only>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg> Pacientes
+    </button>
+    <button class="nav-item" onclick="goTo('servicos', this)" data-admin-only>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg> Serviços
+    </button>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Sistema</div>
+    <button class="nav-item" data-admin-only>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg> Configurações
+    </button>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="avatar">DR</div>
+      <div>
+        <div class="user-name">Dr. Rafael Mendes</div>
+        <div class="user-role">Administrador · CRMV 12345</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ════════════════════════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div>
+      <div class="page-title" id="page-title">Dashboard</div>
+    </div>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span style="color:var(--slate2);font-size:13px;">⌕</span>
+        <input type="text" placeholder="Buscar paciente, exame...">
+      </div>
+      <div class="icon-btn notif-dot"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+      <button class="btn btn-primary" id="topbar-cta" onclick="handleCTA()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Exame</button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ── DASHBOARD ─────────────────────────────────────────── -->
+    <div class="page active" id="page-dashboard">
+
+      <div class="figma-banner" id="figma-banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue);flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div class="figma-text">
+          <strong>Exportar para Figma:</strong> Instale o plugin <strong>html.to.design</strong> ou <strong>Anima</strong> no Figma,
+          cole a URL deste arquivo ou use "Import HTML" — todas as telas ficam editáveis como frames e componentes.
+        </div>
+        <span style="margin-left:auto;cursor:pointer;color:var(--slate2)" onclick="document.getElementById('figma-banner').remove()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          
+          <div class="stat-label">Exames Este Mês</div>
+          <div class="stat-value">87</div>
+          <div class="stat-trend up"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg> 12% vs mês anterior</div>
+        </div>
+        <div class="stat-card teal">
+          
+          <div class="stat-label">Laudos Emitidos</div>
+          <div class="stat-value">74</div>
+          <div class="stat-trend up"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg> 8% vs mês anterior</div>
+        </div>
+        <div class="stat-card green">
+          
+          <div class="stat-label">Faturamento Mês</div>
+          <div class="stat-value">R$&nbsp;14.2k</div>
+          <div class="stat-trend up"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg> 5% vs mês anterior</div>
+        </div>
+        <div class="stat-card amber">
+          
+          <div class="stat-label">Clínicas Ativas</div>
+          <div class="stat-value">8</div>
+          <div class="stat-sub">3 novas este trimestre</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- Exames recentes -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Exames Recentes</div>
+              <div class="card-subtitle">Últimas 24 horas</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="goTo('exames', document.querySelector('[onclick*=exames]'))">Ver todos</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Paciente</th>
+                  <th>Tipo</th>
+                  <th>Clínica</th>
+                  <th>Status</th>
+                  <th>Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="td-bold">Thor</span><br><span style="font-size:11px;color:var(--slate2)">Golden Retriever · Carlos A.</span></td>
+                  <td>USG Abdominal</td>
+                  <td>Clínica PetLife</td>
+                  <td><span class="badge badge-amber">Aguardando</span></td>
+                  <td style="font-weight:600">R$ 180</td>
+                </tr>
+                <tr>
+                  <td><span class="td-bold">Luna</span><br><span style="font-size:11px;color:var(--slate2)">Poodle · Maria S.</span></td>
+                  <td>Ecocardiograma</td>
+                  <td>VetMax</td>
+                  <td><span class="badge badge-blue">Em laudo</span></td>
+                  <td style="font-weight:600">R$ 320</td>
+                </tr>
+                <tr>
+                  <td><span class="td-bold">Bob</span><br><span style="font-size:11px;color:var(--slate2)">Bulldog · João P.</span></td>
+                  <td>Raio-X Tórax</td>
+                  <td>Clínica PetLife</td>
+                  <td><span class="badge badge-green">Liberado</span></td>
+                  <td style="font-weight:600">R$ 120</td>
+                </tr>
+                <tr>
+                  <td><span class="td-bold">Mel</span><br><span style="font-size:11px;color:var(--slate2)">SRD · Ana C.</span></td>
+                  <td>ECG</td>
+                  <td>AnimalCare</td>
+                  <td><span class="badge badge-green">Liberado</span></td>
+                  <td style="font-weight:600">R$ 140</td>
+                </tr>
+                <tr>
+                  <td><span class="td-bold">Max</span><br><span style="font-size:11px;color:var(--slate2)">Labrador · Pedro H.</span></td>
+                  <td>USG Ocular</td>
+                  <td>VetMax</td>
+                  <td><span class="badge badge-amber">Aguardando</span></td>
+                  <td style="font-weight:600">R$ 200</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sidebar direita -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <!-- Gráfico faturamento -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Faturamento Mensal</div>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-size:11px;color:var(--slate2)">R$ / mês</span>
+                <span style="font-size:11px;color:var(--green);font-weight:600"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg> +18% vs ano anterior</span>
+              </div>
+              <div class="chart-bars">
+                <div class="bar-wrap"><div class="bar" style="height:45%;background:var(--sky2)"></div><span class="bar-label">ago</span></div>
+                <div class="bar-wrap"><div class="bar" style="height:58%;background:var(--sky2)"></div><span class="bar-label">set</span></div>
+                <div class="bar-wrap"><div class="bar" style="height:52%;background:var(--sky2)"></div><span class="bar-label">out</span></div>
+                <div class="bar-wrap"><div class="bar" style="height:70%;background:var(--sky2)"></div><span class="bar-label">nov</span></div>
+                <div class="bar-wrap"><div class="bar" style="height:65%;background:var(--sky2)"></div><span class="bar-label">dez</span></div>
+                <div class="bar-wrap"><div class="bar" style="height:88%;background:var(--blue)"></div><span class="bar-label" style="color:var(--blue);font-weight:700">jan</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Atividade recente -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Atividade</div>
+            </div>
+            <div class="card-body" style="padding-bottom:8px">
+              <div class="timeline">
+                <div class="tl-item">
+                  <div class="tl-dot blue"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                  <div><div class="tl-text">Laudo de <b>Luna</b> finalizado</div><div class="tl-time">há 12 min</div></div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot amber"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+                  <div><div class="tl-text">Novo exame registrado — <b>Max</b></div><div class="tl-time">há 35 min</div></div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot green"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                  <div><div class="tl-text">Fatura <b>VetMax</b> marcada como paga</div><div class="tl-time">há 1h</div></div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot blue"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+                  <div><div class="tl-text">Clínica <b>AnimalCare</b> cadastrada</div><div class="tl-time">ontem</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /dashboard -->
+
+    <!-- ── EXAMES ──────────────────────────────────────────────── -->
+    <div class="page" id="page-exames">
+      <div class="tabs">
+        <button class="tab active">Todos</button>
+        <button class="tab">Aguardando Laudo</button>
+        <button class="tab">Em Elaboração</button>
+        <button class="tab">Liberados</button>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+        <button class="btn btn-primary" onclick="showModalExame()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Registrar Novo Exame</button>
+      </div>
+
+      <!-- Lista -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Exames Registrados</div>
+          <div style="display:flex;gap:8px">
+            <select style="padding:5px 10px;font-size:12px;border:1px solid var(--border2);border-radius:7px;font-family:inherit">
+              <option>Todas as clínicas</option>
+              <option>Clínica PetLife</option>
+              <option>VetMax</option>
+            </select>
+            <button class="btn btn-outline btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportar</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Paciente / Tutor</th><th>Tipo de Exame</th><th>Clínica</th><th>Data</th><th>Valor</th><th>Status Laudo</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+              <tr data-exame-id="0042"><td style="color:var(--slate2)">#0042</td><td><b>Thor</b> / Carlos A.</td><td>USG Abdominal</td><td>PetLife</td><td>21/02/2026</td><td>R$ 180</td><td><span class="badge badge-amber">Aguardando</span></td><td><button class="btn btn-primary btn-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Laudo</button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('exame','Thor — USG Abdominal', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td></tr>
+              <tr data-exame-id="0041"><td style="color:var(--slate2)">#0041</td><td><b>Luna</b> / Maria S.</td><td>Ecocardiograma</td><td>VetMax</td><td>21/02/2026</td><td>R$ 320</td><td><span class="badge badge-blue">Em laudo</span></td><td><button class="btn btn-outline btn-sm">Editar</button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('exame','Luna — Ecocardiograma', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td></tr>
+              <tr data-exame-id="0040"><td style="color:var(--slate2)">#0040</td><td><b>Bob</b> / João P.</td><td>Raio-X Tórax</td><td>PetLife</td><td>20/02/2026</td><td>R$ 120</td><td><span class="badge badge-green">Liberado</span></td><td><button class="btn btn-ghost btn-sm">Ver</button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('exame','Bob — Raio-X Tórax', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td></tr>
+              <tr data-exame-id="0039"><td style="color:var(--slate2)">#0039</td><td><b>Mel</b> / Ana C.</td><td>ECG</td><td>AnimalCare</td><td>20/02/2026</td><td>R$ 140</td><td><span class="badge badge-green">Liberado</span></td><td><button class="btn btn-ghost btn-sm">Ver</button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('exame','Mel — ECG', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td></tr>
+              <tr data-exame-id="0038"><td style="color:var(--slate2)">#0038</td><td><b>Max</b> / Pedro H.</td><td>USG Ocular</td><td>VetMax</td><td>19/02/2026</td><td>R$ 200</td><td><span class="badge badge-amber">Aguardando</span></td><td><button class="btn btn-primary btn-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Laudo</button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('exame','Max — USG Ocular', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /exames -->
+
+    <!-- ── LAUDOS ───────────────────────────────────────────────── -->
+    <div class="page" id="page-laudos">
+      <div class="two-col">
+        <!-- Editor -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Editor de Laudo</div>
+              <div class="card-subtitle">Exame #0041 — Luna / Ecocardiograma</div>
+            </div>
+            <span class="badge badge-blue">Em Elaboração</span>
+          </div>
+          <div class="card-body" style="padding:0">
+            <!-- Stepper -->
+            <div style="padding:16px 20px 0">
+              <div class="stepper">
+                <div class="step done"><div class="step-dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Exame<br>registrado</div></div>
+                <div class="step current"><div class="step-dot">2</div><div class="step-label">Em<br>elaboração</div></div>
+                <div class="step"><div class="step-dot">3</div><div class="step-label">Revisão<br>final</div></div>
+                <div class="step"><div class="step-dot">4</div><div class="step-label">Liberado<br>p/ clínica</div></div>
+              </div>
+            </div>
+
+            <!-- Info paciente -->
+            <div style="padding:0 20px 14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:var(--bg);border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-top:14px;padding-top:12px;padding-bottom:12px">
+              <div><div style="font-size:10.5px;color:var(--slate2);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Paciente</div><div style="font-size:13px;font-weight:700;margin-top:2px">Luna</div></div>
+              <div><div style="font-size:10.5px;color:var(--slate2);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Espécie / Raça</div><div style="font-size:13px;font-weight:600;margin-top:2px">Poodle F</div></div>
+              <div><div style="font-size:10.5px;color:var(--slate2);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Tutor</div><div style="font-size:13px;font-weight:600;margin-top:2px">Maria Santos</div></div>
+              <div><div style="font-size:10.5px;color:var(--slate2);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Solicitante</div><div style="font-size:13px;font-weight:600;margin-top:2px">Dr. Bruno Lima</div></div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="editor-toolbar">
+              <button class="tool-btn"><b>B</b></button>
+              <button class="tool-btn"><i>I</i></button>
+              <button class="tool-btn"><u>U</u></button>
+              <div class="tool-sep"></div>
+              <button class="tool-btn">H1</button>
+              <button class="tool-btn">H2</button>
+              <div class="tool-sep"></div>
+              <button class="tool-btn">≡</button>
+              <button class="tool-btn">•—</button>
+              <div class="tool-sep"></div>
+              <button class="tool-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Imagem</button>
+              <button class="tool-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg> Modelo</button>
+            </div>
+            <div class="editor-body" contenteditable="true">
+              <p><strong>LAUDO DE ECOCARDIOGRAMA</strong></p>
+              <p>&nbsp;</p>
+              <p><strong>Técnica:</strong> Exame realizado em modo B, modo M e Doppler colorido, pulsátil e contínuo, utilizando transdutor setorial de 7,5 MHz. Paciente posicionada em decúbito lateral direito e esquerdo.</p>
+              <p>&nbsp;</p>
+              <p><strong>Achados:</strong></p>
+              <p>- Câmaras cardíacas com dimensões dentro dos limites normais para a espécie e porte.</p>
+              <p>- Função sistólica do ventrículo esquerdo preservada (FS = 38%).</p>
+              <p>- Valvas mitral, tricúspide, aórtica e pulmonar com morfologia e mobilidade normais.</p>
+              <p>- Ausência de sinais de efusão pericárdica.</p>
+              <p>&nbsp;</p>
+              <p><strong>Conclusão:</strong> Exame ecocardiográfico dentro dos limites da normalidade para a espécie.</p>
+            </div>
+          </div>
+          <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--bg)">
+            <button class="btn btn-outline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar rascunho</button>
+            <button class="btn btn-outline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Pré-visualizar</button>
+            <button class="btn btn-primary"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Finalizar e Liberar</button>
+          </div>
+        </div>
+
+        <!-- Lista de laudos -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Laudos Recentes</div>
+            </div>
+            <div class="card-body" style="padding:0">
+              <table>
+                <tbody>
+                  <tr>
+                    <td style="padding:12px 16px">
+                      <div style="font-weight:700;font-size:13px">Bob — Raio-X Tórax</div>
+                      <div style="font-size:11px;color:var(--slate2)">PetLife · 20/02/2026</div>
+                    </td>
+                    <td style="padding:12px 16px"><span class="badge badge-green">Liberado</span></td>
+                    <td style="padding:12px 16px"><button class="btn btn-ghost btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF</button></td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 16px">
+                      <div style="font-weight:700;font-size:13px">Mel — ECG</div>
+                      <div style="font-size:11px;color:var(--slate2)">AnimalCare · 20/02/2026</div>
+                    </td>
+                    <td style="padding:12px 16px"><span class="badge badge-green">Liberado</span></td>
+                    <td style="padding:12px 16px"><button class="btn btn-ghost btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF</button></td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 16px">
+                      <div style="font-weight:700;font-size:13px">Luna — Ecocardiograma</div>
+                      <div style="font-size:11px;color:var(--slate2)">VetMax · 21/02/2026</div>
+                    </td>
+                    <td style="padding:12px 16px"><span class="badge badge-blue">Em laudo</span></td>
+                    <td style="padding:12px 16px"><button class="btn btn-outline btn-sm">Editar</button></td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 16px">
+                      <div style="font-weight:700;font-size:13px">Thor — USG Abdominal</div>
+                      <div style="font-size:11px;color:var(--slate2)">PetLife · 21/02/2026</div>
+                    </td>
+                    <td style="padding:12px 16px"><span class="badge badge-amber">Aguardando</span></td>
+                    <td style="padding:12px 16px"><button class="btn btn-primary btn-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Criar</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Assinatura -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">Assinatura do Responsável</div></div>
+            <div class="card-body">
+              <div style="border:2px dashed var(--border2);border-radius:8px;padding:20px;text-align:center;background:var(--bg);margin-bottom:14px">
+                <div style="font-size:20px;font-family:'Inter',sans-serif;color:var(--navy2);font-weight:700;font-style:italic">Dr. Rafael Mendes</div>
+                <div style="font-size:11.5px;color:var(--slate2);margin-top:4px">Médico Veterinário · CRMV-SP 12345</div>
+              </div>
+              <div style="font-size:11.5px;color:var(--slate2);text-align:center">Gerado automaticamente ao finalizar o laudo</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /laudos -->
+
+    <!-- ── FINANCEIRO ───────────────────────────────────────────── -->
+    <div class="page" id="page-financeiro">
+      <!-- Dashboards: Pizza + Torres (barras) -->
+      <div class="three-col" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Faturamento por Serviço</div>
+            <div class="card-subtitle">Distribuição Jan/2026</div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container pie">
+              <canvas id="chartPizza"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Faturamento por Clínica</div>
+            <div class="card-subtitle">Valores em R$ (Jan/2026)</div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="chartTorres"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Exames por Mês</div>
+            <div class="card-subtitle">Últimos 6 meses</div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="chartBarras"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card green">
+          
+          <div class="stat-label">Recebido (Jan)</div>
+          <div class="stat-value">R$&nbsp;11.4k</div>
+          <div class="stat-trend up"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg> 8% vs dez</div>
+        </div>
+        <div class="stat-card amber">
+          
+          <div class="stat-label">Pendente</div>
+          <div class="stat-value">R$&nbsp;2.8k</div>
+          <div class="stat-sub">3 clínicas em aberto</div>
+        </div>
+        <div class="stat-card blue">
+          
+          <div class="stat-label">Total Faturado</div>
+          <div class="stat-value">R$&nbsp;14.2k</div>
+          <div class="stat-sub">87 exames</div>
+        </div>
+        <div class="stat-card teal">
+          
+          <div class="stat-label">Ticket Médio</div>
+          <div class="stat-value">R$&nbsp;163</div>
+          <div class="stat-trend up"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg> 3% vs dez</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Faturamento por Clínica — Jan/2026</div>
+            <div style="display:flex;gap:8px">
+              <select style="padding:5px 10px;font-size:12px;border:1px solid var(--border2);border-radius:7px;font-family:inherit">
+                <option>Janeiro 2026</option>
+                <option>Dezembro 2025</option>
+              </select>
+              <button class="btn btn-outline btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel</button>
+              <button class="btn btn-outline btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Clínica</th><th>Exames</th><th>Valor Total</th><th>Status</th><th>Ações</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>Clínica PetLife</b></td>
+                  <td>32</td>
+                  <td style="font-weight:700;color:var(--text)">R$ 5.280,00</td>
+                  <td><span class="badge badge-green">Pago</span></td>
+                  <td><button class="btn btn-ghost btn-sm">Ver</button></td>
+                </tr>
+                <tr>
+                  <td><b>VetMax</b></td>
+                  <td>28</td>
+                  <td style="font-weight:700;color:var(--text)">R$ 4.760,00</td>
+                  <td><span class="badge badge-green">Pago</span></td>
+                  <td><button class="btn btn-ghost btn-sm">Ver</button></td>
+                </tr>
+                <tr>
+                  <td><b>AnimalCare</b></td>
+                  <td>18</td>
+                  <td style="font-weight:700;color:var(--text)">R$ 2.340,00</td>
+                  <td><span class="badge badge-amber">Pendente</span></td>
+                  <td><button class="btn btn-primary btn-sm">Cobrar</button></td>
+                </tr>
+                <tr>
+                  <td><b>ClinVet Sul</b></td>
+                  <td>9</td>
+                  <td style="font-weight:700;color:var(--text)">R$ 1.440,00</td>
+                  <td><span class="badge badge-amber">Pendente</span></td>
+                  <td><button class="btn btn-primary btn-sm">Cobrar</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Top Serviços (Jan)</div></div>
+            <div class="card-body">
+              <div class="finance-row">
+                <div><div class="finance-name">Ecocardiograma</div><div class="finance-sub">22 exames</div></div>
+                <div class="finance-value pos">R$ 7.040</div>
+              </div>
+              <div class="finance-row">
+                <div><div class="finance-name">USG Abdominal</div><div class="finance-sub">30 exames</div></div>
+                <div class="finance-value pos">R$ 5.400</div>
+              </div>
+              <div class="finance-row">
+                <div><div class="finance-name">Raio-X (todos)</div><div class="finance-sub">20 exames</div></div>
+                <div class="finance-value pos">R$ 2.400</div>
+              </div>
+              <div class="finance-row">
+                <div><div class="finance-name">ECG</div><div class="finance-sub">15 exames</div></div>
+                <div class="finance-value pend">R$ 1.800</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Ações Rápidas</div></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-outline" style="justify-content:flex-start"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Gerar Relatório Mensal</button>
+              <button class="btn btn-outline" style="justify-content:flex-start"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportar Extrato Excel</button>
+              <button class="btn btn-outline" style="justify-content:flex-start"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Enviar Cobrança WhatsApp</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /financeiro -->
+
+    <!-- ── CADASTROS ────────────────────────────────────────────── -->
+    <div class="page" id="page-cadastros">
+      <div class="tabs" id="cadastro-tabs">
+        <button class="tab active" data-tab="clinicas">Clínicas</button>
+        <button class="tab" data-tab="tutores">Tutores</button>
+        <button class="tab" data-tab="vets">Vet. Solicitantes</button>
+      </div>
+
+      <!-- TAB: Clínicas -->
+      <div class="tab-content" id="tab-clinicas">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+        <button class="btn btn-primary" onclick="showModalClinica()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nova Clínica</button>
+      </div>
+
+      <div class="card">
+          <div class="card-header"><div class="card-title">Clínicas Cadastradas</div></div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <tbody>
+                <tr data-clinica="petlife">
+                  <td style="padding:12px 16px">
+                    <div style="font-weight:700">Clínica PetLife</div>
+                    <div style="font-size:11px;color:var(--slate2)">3 veterinários · 32 exames/mês</div>
+                  </td>
+                  <td><span class="badge badge-green">Ativa</span></td>
+                  <td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('clínica','Clínica PetLife', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td>
+                </tr>
+                <tr data-clinica="vetmax">
+                  <td style="padding:12px 16px">
+                    <div style="font-weight:700">VetMax</div>
+                    <div style="font-size:11px;color:var(--slate2)">2 veterinários · 28 exames/mês</div>
+                  </td>
+                  <td><span class="badge badge-green">Ativa</span></td>
+                  <td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('clínica','VetMax', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td>
+                </tr>
+                <tr data-clinica="animalcare">
+                  <td style="padding:12px 16px">
+                    <div style="font-weight:700">AnimalCare</div>
+                    <div style="font-size:11px;color:var(--slate2)">1 veterinário · 18 exames/mês</div>
+                  </td>
+                  <td><span class="badge badge-green">Ativa</span></td>
+                  <td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('clínica','AnimalCare', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td>
+                </tr>
+                <tr data-clinica="petcenter">
+                  <td style="padding:12px 16px">
+                    <div style="font-weight:700">Pet Center Norte</div>
+                    <div style="font-size:11px;color:var(--slate2)">0 exames este mês</div>
+                  </td>
+                  <td><span class="badge badge-gray">Inativa</span></td>
+                  <td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('clínica','Pet Center Norte', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      </div><!-- /tab-clinicas -->
+
+      <!-- TAB: Tutores -->
+      <div class="tab-content" id="tab-tutores" style="display:none">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+          <button class="btn btn-primary" onclick="showFormModal('tutor')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Tutor</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Tutores Cadastrados</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nome</th><th>CPF</th><th>Telefone</th><th>Clínica</th><th>Animais</th><th></th></tr></thead>
+              <tbody>
+                <tr><td class="td-bold">Carlos Andrade</td><td>123.456.789-00</td><td>(11) 98765-4321</td><td>PetLife</td><td><span class="badge badge-green">2</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('tutor','Carlos Andrade', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+                <tr><td class="td-bold">Maria Santos</td><td>987.654.321-00</td><td>(11) 91234-5678</td><td>VetMax</td><td><span class="badge badge-blue">1</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('tutor','Maria Santos', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+                <tr><td class="td-bold">João Pereira</td><td>456.789.123-00</td><td>(11) 99876-5432</td><td>PetLife</td><td><span class="badge badge-green">2</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('tutor','João Pereira', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+                <tr><td class="td-bold">Ana Costa</td><td>789.123.456-00</td><td>(11) 97654-3210</td><td>AnimalCare</td><td><span class="badge badge-amber">1</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('tutor','Ana Costa', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /tab-tutores -->
+
+      <!-- TAB: Vet. Solicitantes -->
+      <div class="tab-content" id="tab-vets" style="display:none">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+          <button class="btn btn-primary" onclick="showModalVet()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Veterinário</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Veterinários Solicitantes</div><div class="card-subtitle">Profissionais vinculados às clínicas</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nome</th><th>CRMV</th><th>Clínica</th><th>Exames Solicitados</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                <tr><td class="td-bold">Dra. Ana Oliveira</td><td>CRMV-SP 5421</td><td>Clínica PetLife</td><td>42</td><td><span class="badge badge-green">Ativo</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('veterinário','Dra. Ana Oliveira', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+                <tr><td class="td-bold">Dr. Bruno Lima</td><td>CRMV-SP 7832</td><td>VetMax</td><td>28</td><td><span class="badge badge-green">Ativo</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('veterinário','Dr. Bruno Lima', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+                <tr><td class="td-bold">Dr. Carlos Souza</td><td>CRMV-SP 6190</td><td>AnimalCare</td><td>18</td><td><span class="badge badge-green">Ativo</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('veterinário','Dr. Carlos Souza', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+                <tr><td class="td-bold">Dr. Marcos Pinto</td><td>CRMV-SP 8845</td><td>ClinVet Sul</td><td>9</td><td><span class="badge badge-green">Ativo</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('veterinário','Dr. Marcos Pinto', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+                <tr><td class="td-bold">Dr. Felipe Rocha</td><td>CRMV-SP 4210</td><td>Clínica PetLife</td><td>15</td><td><span class="badge badge-green">Ativo</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('veterinário','Dr. Felipe Rocha', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /tab-vets -->
+
+    </div><!-- /cadastros -->
+
+    <!-- ── PACIENTES ────────────────────────────────────────────── -->
+    <div class="page" id="page-pacientes">
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-label">Tutores Cadastrados</div>
+          <div class="stat-value">24</div>
+          <div class="stat-sub">em 8 clínicas</div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-label">Animais</div>
+          <div class="stat-value">38</div>
+          <div class="stat-trend up"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg> 5 novos este mês</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Exames (Mês)</div>
+          <div class="stat-value">87</div>
+          <div class="stat-sub">pacientes atendidos</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Espécies</div>
+          <div class="stat-value">2</div>
+          <div class="stat-sub">Cães e Gatos</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Tutores e Pacientes</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="search-box">
+              <span style="color:var(--slate2)">⌕</span>
+              <input type="text" placeholder="Buscar tutor ou paciente...">
+            </div>
+            <select style="padding:6px 10px;font-size:12px;border:1px solid var(--border2);border-radius:7px;font-family:inherit">
+              <option>Todas as clínicas</option>
+              <option>PetLife</option><option>VetMax</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="showFormModal('paciente')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Paciente</button>
+            <button class="btn btn-primary btn-sm" onclick="showFormModal('tutor')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Tutor</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+
+          <!-- Tutor expandido: Carlos Andrade -->
+          <div style="border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-left:4px solid var(--green)">
+              <div style="display:flex;align-items:center;gap:14px">
+                <div class="avatar" style="width:42px;height:42px;font-size:16px">CA</div>
+                <div>
+                  <div style="font-size:14px;font-weight:700;color:var(--text)">Carlos Andrade</div>
+                  <div style="font-size:12px;color:var(--slate2)">CPF 123.456.789-00 · (11) 98765-4321 · Clínica PetLife</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <span class="badge badge-green">2 animais</span>
+                <button class="btn btn-outline btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar</button>
+                <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('tutor','Carlos Andrade',this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+              </div>
+            </div>
+            <div style="padding:0 20px 16px;background:var(--bg)">
+              <div class="patient-grid" style="padding-top:16px">
+                <div class="patient-card" style="border-color:var(--blue2)">
+                  <div class="patient-header">
+                    <div class="species-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="4"/><path d="M3 21v-4a8 8 0 0 1 16 0v4"/><path d="M8 11V7"/><path d="M14 11V7"/></svg></div>
+                    <div>
+                      <div class="patient-name">Thor</div>
+                      <div class="patient-breed">Golden Retriever · Macho</div>
+                    </div>
+                  </div>
+                  <div class="patient-info">
+                    <div class="info-item"><div class="info-label">Idade</div><div class="info-value">4 anos</div></div>
+                    <div class="info-item"><div class="info-label">Peso</div><div class="info-value">28 kg</div></div>
+                    <div class="info-item"><div class="info-label">Exames</div><div class="info-value">7 total</div></div>
+                    <div class="info-item"><div class="info-label">Último</div><div class="info-value">21/02/26</div></div>
+                  </div>
+                  <div style="margin-top:12px;display:flex;gap:6px">
+                    <button class="btn btn-primary btn-sm" style="flex:1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Exame</button>
+                    <button class="btn btn-ghost btn-sm">Histórico</button>
+                  </div>
+                </div>
+                <div class="patient-card">
+                  <div class="patient-header">
+                    <div class="species-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="4"/><path d="M3 21v-4a8 8 0 0 1 16 0v4"/><path d="M8 11V7"/><path d="M14 11V7"/></svg></div>
+                    <div>
+                      <div class="patient-name">Rex</div>
+                      <div class="patient-breed">Labrador · Macho</div>
+                    </div>
+                  </div>
+                  <div class="patient-info">
+                    <div class="info-item"><div class="info-label">Idade</div><div class="info-value">2 anos</div></div>
+                    <div class="info-item"><div class="info-label">Peso</div><div class="info-value">30 kg</div></div>
+                    <div class="info-item"><div class="info-label">Exames</div><div class="info-value">2 total</div></div>
+                    <div class="info-item"><div class="info-label">Último</div><div class="info-value">10/01/26</div></div>
+                  </div>
+                  <div style="margin-top:12px;display:flex;gap:6px">
+                    <button class="btn btn-primary btn-sm" style="flex:1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Exame</button>
+                    <button class="btn btn-ghost btn-sm">Histórico</button>
+                  </div>
+                </div>
+                <div class="patient-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;min-height:160px;background:var(--white);cursor:pointer" onclick="showFormModal('paciente')" title="Adicionar novo animal">
+                  <div style="font-size:28px;opacity:.3">+</div>
+                  <div style="font-size:12.5px;color:var(--slate2);font-weight:500;text-align:center">Adicionar animal</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tutor: Maria Santos -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div class="avatar" style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,var(--teal),var(--green))">MS</div>
+              <div>
+                <div style="font-size:13.5px;font-weight:700;color:var(--text)">Maria Santos</div>
+                <div style="font-size:12px;color:var(--slate2)">CPF 987.654.321-00 · (11) 91234-5678 · Clínica VetMax</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="badge badge-blue">1 animal</span>
+              <button class="btn btn-outline btn-sm">Ver detalhes</button>
+              <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('tutor','Maria Santos',this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+            </div>
+          </div>
+
+          <!-- Tutor: João Pereira -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div class="avatar" style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,var(--amber),var(--red))">JP</div>
+              <div>
+                <div style="font-size:13.5px;font-weight:700;color:var(--text)">João Pereira</div>
+                <div style="font-size:12px;color:var(--slate2)">CPF 456.789.123-00 · (11) 99876-5432 · Clínica PetLife</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="badge badge-green">2 animais</span>
+              <button class="btn btn-outline btn-sm">Ver detalhes</button>
+              <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('tutor','João Pereira',this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+            </div>
+          </div>
+
+          <!-- Tutor: Ana Costa -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div class="avatar" style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,var(--blue),var(--teal))">AC</div>
+              <div>
+                <div style="font-size:13.5px;font-weight:700;color:var(--text)">Ana Costa</div>
+                <div style="font-size:12px;color:var(--slate2)">CPF 789.123.456-00 · (11) 97654-3210 · AnimalCare</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="badge badge-amber">1 animal</span>
+              <button class="btn btn-outline btn-sm">Ver detalhes</button>
+              <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('tutor','Ana Costa',this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div><!-- /pacientes -->
+
+    <!-- ── SERVIÇOS ─────────────────────────────────────────────── -->
+    <div class="page" id="page-servicos">
+      <!-- Stats resumo -->
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card blue">
+          <div class="stat-label">Serviços Ativos</div>
+          <div class="stat-value">7</div>
+          <div class="stat-sub">todos em uso</div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-label">Categorias</div>
+          <div class="stat-value">4</div>
+          <div class="stat-sub">Imagem, Cardio, Radiologia, Clínico</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Valor Médio</div>
+          <div class="stat-value">R$&nbsp;190</div>
+          <div class="stat-sub">por exame</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Mais Utilizado</div>
+          <div class="stat-value">USG</div>
+          <div class="stat-sub">Abdominal + Ocular</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Serviços Cadastrados</div>
+            <button class="btn btn-primary btn-sm" onclick="showModalServico()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Serviço</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Serviço</th><th>Categoria</th><th>Valor Padrão</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                <tr data-servico="usg"><td class="td-bold">Ultrassonografia Abdominal</td><td><span class="badge badge-teal">Imagem</span></td><td>R$ 180,00</td><td><span class="badge badge-green">Ativo</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('serviço','Ultrassonografia Abdominal', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td></tr>
+                <tr data-servico="eco"><td class="td-bold">Ecocardiograma</td><td><span class="badge badge-blue">Cardio</span></td><td>R$ 320,00</td><td><span class="badge badge-green">Ativo</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('serviço','Ecocardiograma', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td></tr>
+                <tr data-servico="ecg"><td class="td-bold">Eletrocardiograma</td><td><span class="badge badge-blue">Cardio</span></td><td>R$ 140,00</td><td><span class="badge badge-green">Ativo</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('serviço','Eletrocardiograma', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td></tr>
+                <tr data-servico="rx"><td class="td-bold">Raio-X Tórax</td><td><span class="badge badge-amber">Radiologia</span></td><td>R$ 120,00</td><td><span class="badge badge-green">Ativo</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('serviço','Raio-X Tórax', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td></tr>
+                <tr data-servico="rxabd"><td class="td-bold">Raio-X Abdômen</td><td><span class="badge badge-amber">Radiologia</span></td><td>R$ 120,00</td><td><span class="badge badge-green">Ativo</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('serviço','Raio-X Abdômen', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td></tr>
+                <tr data-servico="usgoc"><td class="td-bold">USG Ocular</td><td><span class="badge badge-teal">Imagem</span></td><td>R$ 200,00</td><td><span class="badge badge-green">Ativo</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('serviço','USG Ocular', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td></tr>
+                <tr data-servico="cardio"><td class="td-bold">Atend. Cardiológico</td><td><span class="badge badge-blue">Clínico</span></td><td>R$ 250,00</td><td><span class="badge badge-green">Ativo</span></td><td><button class="btn btn-ghost btn-sm" title="Editar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('serviço','Atend. Cardiológico', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Valores por Clínica</div><div class="card-subtitle">Sobrescrever valor padrão</div></div>
+          <div class="card-body">
+            <div class="form-grid" style="grid-template-columns:1fr">
+              <div class="form-group">
+                <label>Clínica</label>
+                <select><option>Clínica PetLife</option><option>VetMax</option><option>AnimalCare</option></select>
+              </div>
+              <div class="form-group">
+                <label>Serviço</label>
+                <select><option selected>Ecocardiograma</option><option>USG Abdominal</option></select>
+              </div>
+              <div class="form-group">
+                <label>Valor Específico (R$)</label>
+                <input type="number" value="290.00">
+                <span class="input-hint">Valor padrão: R$ 320,00</span>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:14px;width:100%">Salvar Valor</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /servicos -->
+
+    <!-- ── RELATÓRIOS ──────────────────────────────────────────── -->
+    <div class="page" id="page-relatorios">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div class="form-group" style="margin:0">
+            <label style="font-size:11px;margin-bottom:3px">Período</label>
+            <div style="display:flex;gap:6px">
+              <input type="date" value="2026-01-01" style="padding:7px 10px;font-size:12px">
+              <input type="date" value="2026-02-21" style="padding:7px 10px;font-size:12px">
+            </div>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label style="font-size:11px;margin-bottom:3px">Clínica</label>
+            <select style="padding:7px 10px;font-size:12px;border:1.5px solid var(--border2);border-radius:7px;font-family:inherit">
+              <option>Todas</option><option>PetLife</option><option>VetMax</option><option>AnimalCare</option><option>ClinVet Sul</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label style="font-size:11px;margin-bottom:3px">Tipo de Serviço</label>
+            <select style="padding:7px 10px;font-size:12px;border:1.5px solid var(--border2);border-radius:7px;font-family:inherit">
+              <option>Todos</option><option>USG Abdominal</option><option>Ecocardiograma</option><option>ECG</option><option>Raio-X</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="showToast('Filtros aplicados','green')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 3 2 3 10 12.46 10 19 14 21 14 12.46"/></svg> Filtrar</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn btn-outline btn-sm" onclick="showToast('Exportando PDF...','blue')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF</button>
+          <button class="btn btn-outline btn-sm" onclick="showToast('Exportando Excel...','blue')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card blue">
+          <div class="stat-label">Total de Exames</div>
+          <div class="stat-value">165</div>
+          <div class="stat-sub">no período selecionado</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Faturamento Total</div>
+          <div class="stat-value">R$&nbsp;28.6k</div>
+          <div class="stat-trend up"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg> 12% vs período anterior</div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-label">Laudos Emitidos</div>
+          <div class="stat-value">148</div>
+          <div class="stat-sub">90% de conclusão</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Ticket Médio</div>
+          <div class="stat-value">R$&nbsp;173</div>
+          <div class="stat-trend up"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg> 5% vs anterior</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="two-col" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Produção por Período</div><div class="card-subtitle">Exames realizados por mês</div></div>
+          <div class="card-body"><div class="chart-container"><canvas id="chartRelProd"></canvas></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Exames por Tipo de Serviço</div></div>
+            <div class="card-body"><div class="chart-container pie"><canvas id="chartRelTipo"></canvas></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela detalhada -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Histórico Detalhado de Serviços</div><div class="card-subtitle">165 registros encontrados</div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Data</th><th>Paciente</th><th>Tipo</th><th>Clínica</th><th>Vet. Solicitante</th><th>Valor</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>21/02/2026</td><td><b>Thor</b> / Carlos A.</td><td>USG Abdominal</td><td>PetLife</td><td>Dra. Ana Oliveira</td><td style="font-weight:600">R$ 180</td><td><span class="badge badge-amber">Aguardando</span></td></tr>
+              <tr><td>21/02/2026</td><td><b>Luna</b> / Maria S.</td><td>Ecocardiograma</td><td>VetMax</td><td>Dr. Bruno Lima</td><td style="font-weight:600">R$ 320</td><td><span class="badge badge-blue">Em laudo</span></td></tr>
+              <tr><td>20/02/2026</td><td><b>Bob</b> / João P.</td><td>Raio-X Tórax</td><td>PetLife</td><td>Dra. Ana Oliveira</td><td style="font-weight:600">R$ 120</td><td><span class="badge badge-green">Liberado</span></td></tr>
+              <tr><td>20/02/2026</td><td><b>Mel</b> / Ana C.</td><td>ECG</td><td>AnimalCare</td><td>Dr. Carlos Souza</td><td style="font-weight:600">R$ 140</td><td><span class="badge badge-green">Liberado</span></td></tr>
+              <tr><td>19/02/2026</td><td><b>Max</b> / Pedro H.</td><td>USG Ocular</td><td>VetMax</td><td>Dr. Bruno Lima</td><td style="font-weight:600">R$ 200</td><td><span class="badge badge-green">Liberado</span></td></tr>
+              <tr><td>18/02/2026</td><td><b>Nina</b> / Fernanda L.</td><td>Ecocardiograma</td><td>PetLife</td><td>Dra. Ana Oliveira</td><td style="font-weight:600">R$ 320</td><td><span class="badge badge-green">Liberado</span></td></tr>
+              <tr><td>17/02/2026</td><td><b>Buddy</b> / Roberto M.</td><td>Raio-X Abdômen</td><td>ClinVet Sul</td><td>Dr. Marcos Pinto</td><td style="font-weight:600">R$ 120</td><td><span class="badge badge-green">Liberado</span></td></tr>
+              <tr><td>16/02/2026</td><td><b>Bella</b> / Camila R.</td><td>USG Abdominal</td><td>AnimalCare</td><td>Dr. Carlos Souza</td><td style="font-weight:600">R$ 180</td><td><span class="badge badge-green">Liberado</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Resumo por Clínica -->
+      <div class="card" style="margin-top:20px">
+        <div class="card-header"><div class="card-title">Faturamento Mensal Consolidado</div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Mês</th><th>PetLife</th><th>VetMax</th><th>AnimalCare</th><th>ClinVet Sul</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td class="td-bold">Jan/2026</td><td>R$ 5.280</td><td>R$ 4.760</td><td>R$ 2.340</td><td>R$ 1.440</td><td style="font-weight:800;color:var(--green)">R$ 13.820</td></tr>
+              <tr><td class="td-bold">Fev/2026</td><td>R$ 5.940</td><td>R$ 5.100</td><td>R$ 2.180</td><td>R$ 1.560</td><td style="font-weight:800;color:var(--green)">R$ 14.780</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /relatorios -->
+
+    <!-- ── PORTAL DA CLÍNICA ───────────────────────────────────── -->
+    <div class="page" id="page-portal-clinica">
+      <div class="clinic-banner">
+        <div class="clinic-banner-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div class="clinic-banner-text">Bem-vinda, <strong>Clínica PetLife</strong>. Aqui você acompanha seus exames, laudos e faturamento.</div>
+      </div>
+
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card blue">
+          <div class="stat-label">Exames (Fev)</div>
+          <div class="stat-value">32</div>
+          <div class="stat-sub">este mês</div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-label">Laudos Liberados</div>
+          <div class="stat-value">28</div>
+          <div class="stat-sub">prontos para download</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Aguardando Laudo</div>
+          <div class="stat-value">4</div>
+          <div class="stat-sub">em elaboração</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Faturamento (Fev)</div>
+          <div class="stat-value">R$&nbsp;5.9k</div>
+          <div class="stat-sub">valor total</div>
+        </div>
+      </div>
+
+      <div class="tabs" id="portal-tabs">
+        <button class="tab active">Laudos</button>
+        <button class="tab">Exames</button>
+        <button class="tab">Faturamento</button>
+      </div>
+
+      <!-- Laudos da clínica -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Meus Laudos</div><div class="card-subtitle">Exibindo laudos da Clínica PetLife</div></div>
+          <div style="display:flex;gap:8px">
+            <div class="search-box" style="width:200px"><span style="color:var(--slate2)">⌕</span><input type="text" placeholder="Buscar laudo..."></div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Data</th><th>Paciente / Tutor</th><th>Tipo de Exame</th><th>Vet. Solicitante</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody>
+              <tr><td>21/02/2026</td><td><b>Thor</b> / Carlos A.</td><td>USG Abdominal</td><td>Dra. Ana Oliveira</td><td><span class="badge badge-amber">Em elaboração</span></td><td><span style="font-size:12px;color:var(--slate2)">Disponível em breve</span></td></tr>
+              <tr><td>20/02/2026</td><td><b>Bob</b> / João P.</td><td>Raio-X Tórax</td><td>Dra. Ana Oliveira</td><td><span class="badge badge-green">Liberado</span></td><td><button class="btn btn-primary btn-sm" onclick="showToast('Gerando PDF...','blue')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF</button> <button class="btn btn-outline btn-sm">Visualizar</button></td></tr>
+              <tr><td>18/02/2026</td><td><b>Nina</b> / Fernanda L.</td><td>Ecocardiograma</td><td>Dra. Ana Oliveira</td><td><span class="badge badge-green">Liberado</span></td><td><button class="btn btn-primary btn-sm" onclick="showToast('Gerando PDF...','blue')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF</button> <button class="btn btn-outline btn-sm">Visualizar</button></td></tr>
+              <tr><td>15/02/2026</td><td><b>Rex</b> / Carlos A.</td><td>ECG</td><td>Dra. Ana Oliveira</td><td><span class="badge badge-green">Liberado</span></td><td><button class="btn btn-primary btn-sm" onclick="showToast('Gerando PDF...','blue')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF</button> <button class="btn btn-outline btn-sm">Visualizar</button></td></tr>
+              <tr><td>10/02/2026</td><td><b>Thor</b> / Carlos A.</td><td>Raio-X Abdômen</td><td>Dr. Felipe Rocha</td><td><span class="badge badge-green">Liberado</span></td><td><button class="btn btn-primary btn-sm" onclick="showToast('Gerando PDF...','blue')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF</button> <button class="btn btn-outline btn-sm">Visualizar</button></td></tr>
+              <tr><td>05/02/2026</td><td><b>Mel</b> / Ana C.</td><td>USG Abdominal</td><td>Dra. Ana Oliveira</td><td><span class="badge badge-green">Liberado</span></td><td><button class="btn btn-primary btn-sm" onclick="showToast('Gerando PDF...','blue')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF</button> <button class="btn btn-outline btn-sm">Visualizar</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /portal-clinica -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ── PAGE NAVIGATION ────────────────────────────────────────────────────
+let _currentProfile = 'admin';
+
+const PAGE_META = {
+  dashboard:        { title: 'Dashboard',        cta: 'Novo Exame',      ctaPage: 'exames'     },
+  exames:           { title: 'Exames',           cta: 'Registrar Exame', ctaPage: 'exames'     },
+  laudos:           { title: 'Laudos',           cta: 'Novo Laudo',      ctaPage: 'laudos'     },
+  financeiro:       { title: 'Financeiro',       cta: 'Exportar',        ctaPage: null         },
+  relatorios:       { title: 'Relatórios',       cta: 'Exportar',        ctaPage: null         },
+  cadastros:        { title: 'Cadastros',        cta: 'Nova Clínica',    ctaPage: 'cadastros'  },
+  pacientes:        { title: 'Pacientes',        cta: 'Novo Paciente',   ctaPage: 'pacientes'  },
+  servicos:         { title: 'Serviços',         cta: 'Novo Serviço',    ctaPage: 'servicos'   },
+  'portal-clinica': { title: 'Portal da Clínica', cta: 'Exportar',       ctaPage: null         },
+};
+
+const PLUS_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+const DL_ICON   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+
+function goTo(id, triggerEl) {
+  // hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // deactivate all nav items
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  // show target page
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+
+  // activate correct nav item by data-page attribute
+  const navEl = document.querySelector(`.nav-item[data-page="${id}"]`);
+  if (navEl) navEl.classList.add('active');
+
+  // update topbar title & CTA button
+  const meta = PAGE_META[id] || { title: id, cta: 'Novo', ctaPage: null };
+  document.getElementById('page-title').textContent = meta.title;
+
+  const cta = document.getElementById('topbar-cta');
+  if (cta) {
+    const isExport = meta.cta === 'Exportar';
+    cta.innerHTML = (isExport ? DL_ICON : PLUS_ICON) + ' ' + meta.cta;
+    cta.dataset.ctaPage = meta.ctaPage || '';
+  }
+
+  // Init charts when entering specific pages
+  if (id === 'financeiro') initFinanceCharts();
+  if (id === 'relatorios') initRelatoriosCharts();
+}
+
+// CTA button click
+document.getElementById('topbar-cta').addEventListener('click', function() {
+  const target = this.dataset.ctaPage;
+  const ctaText = this.textContent.trim();
+  if (ctaText.includes('Registrar Exame')) { showModalExame(); return; }
+  if (ctaText.includes('Nova Clínica')) { showModalClinica(); return; }
+  if (ctaText.includes('Novo Serviço')) { showModalServico(); return; }
+  if (ctaText.includes('Novo Paciente') || ctaText.includes('Novo Tutor')) { showFormModal(ctaText.includes('Tutor') ? 'tutor' : 'paciente'); return; }
+  if (target) goTo(target, null);
+  else showToast('Funcionalidade em desenvolvimento');
+});
+
+// Wire up all nav items via data-page
+document.querySelectorAll('.nav-item[data-page]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    goTo(this.dataset.page, this);
+  });
+});
+
+// ── TABS ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.tabs').forEach(tabs => {
+  tabs.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      tabs.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      filterTable(tabs, this.textContent.trim());
+    });
+  });
+});
+
+function filterTable(tabs, label) {
+  // Find the card/table after this tabs element
+  const page = tabs.closest('.page');
+  if (!page) return;
+  const rows = page.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    const badge = row.querySelector('.badge');
+    if (label === 'Todos' || !badge) {
+      row.style.display = '';
+    } else {
+      const status = badge.textContent.trim().toLowerCase();
+      if (label === 'Aguardando Laudo' && status.includes('aguardando')) row.style.display = '';
+      else if (label === 'Em Elaboração' && status.includes('laudo')) row.style.display = '';
+      else if (label === 'Liberados' && status.includes('liberado')) row.style.display = '';
+      else row.style.display = 'none';
+    }
+  });
+}
+
+// ── "VER TODOS" LINKS ──────────────────────────────────────────────────
+document.querySelectorAll('[data-goto]').forEach(el => {
+  el.addEventListener('click', function() {
+    goTo(this.dataset.goto, null);
+  });
+});
+
+// ── EXAME ACTIONS ──────────────────────────────────────────────────────
+// "+ Laudo" buttons → go to laudos page
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('button, .btn');
+  if (!btn) return;
+  const text = btn.textContent.trim();
+
+  // + Laudo / + Criar → open laudo editor
+  if (text.includes('Laudo') && btn.classList.contains('btn-primary') && !text.includes('Novo')) {
+    goTo('laudos', null);
+    showToast('Abrindo editor de laudo...');
+    return;
+  }
+
+  // "Editar" in exames table → go to laudos
+  if (text === 'Editar' && btn.closest('#page-exames')) {
+    goTo('laudos', null);
+    return;
+  }
+
+  // "Ver" in exames table → open detail toast
+  if (text === 'Ver' && btn.closest('#page-exames')) {
+    showToast('Visualizando exame (somente leitura)');
+    return;
+  }
+
+  // "Cobrar" in financeiro → simulate
+  if (text === 'Cobrar') {
+    showToast('Cobrança enviada por e-mail/WhatsApp');
+    return;
+  }
+
+  // "Ver" in financeiro
+  if (text === 'Ver' && btn.closest('#page-financeiro')) {
+    showExameModal();
+    return;
+  }
+
+  // Salvar rascunho
+  if (text.includes('Salvar rascunho')) {
+    showToast('Rascunho salvo com sucesso!', 'green');
+    return;
+  }
+
+  // Finalizar e Liberar
+  if (text.includes('Finalizar e Liberar')) {
+    finalizarLaudo();
+    return;
+  }
+
+  // Pré-visualizar
+  if (text.includes('visualizar') || text.includes('Pré-visualizar')) {
+    showPDFPreview();
+    return;
+  }
+
+  // Registrar Exame
+  if (text.includes('Registrar Exame')) {
+    showToast('Exame registrado com sucesso!', 'green');
+    addExameToTable();
+    return;
+  }
+
+  // Salvar Clínica
+  if (text.includes('Salvar Clínica')) {
+    showToast('Clínica cadastrada com sucesso!', 'green');
+    return;
+  }
+
+  // Salvar Valor
+  if (text.includes('Salvar Valor')) {
+    showToast('Valor específico salvo!', 'green');
+    return;
+  }
+
+  // PDF download buttons
+  if (text.includes('PDF') && !text.includes('Pré')) {
+    showToast('Gerando PDF...', 'blue');
+    setTimeout(() => showToast('PDF pronto para download!', 'green'), 1200);
+    return;
+  }
+
+  // Excel export
+  if (text.includes('Excel')) {
+    showToast('Exportando para Excel...', 'blue');
+    setTimeout(() => showToast('Arquivo Excel gerado!', 'green'), 1000);
+    return;
+  }
+
+  // Histórico
+  if (text === 'Histórico') {
+    showHistoricoModal(btn);
+    return;
+  }
+
+  // + Exame (patient card)
+  if (text.includes('Exame') && btn.closest('.patient-grid')) {
+    goTo('exames', null);
+    return;
+  }
+
+  // Relatório
+  if (text.includes('Relatório')) {
+    showToast('Gerando relatório...', 'blue');
+    setTimeout(() => showToast('Relatório disponível para download!', 'green'), 1500);
+    return;
+  }
+
+  // WhatsApp
+  if (text.includes('WhatsApp')) {
+    showToast('Mensagem de cobrança enviada via WhatsApp!', 'green');
+    return;
+  }
+
+  // Cancelar buttons
+  if (text === 'Cancelar') {
+    showToast('Ação cancelada');
+    return;
+  }
+
+  // Novo Tutor / Novo Paciente
+  if (text.includes('Novo Tutor') || text.includes('Novo Paciente')) {
+    showFormModal(text.includes('Tutor') ? 'tutor' : 'paciente');
+    return;
+  }
+
+  // Ver detalhes (tutor card)
+  if (text === 'Ver detalhes') {
+    expandTutor(btn);
+    return;
+  }
+
+  // Edit pencil buttons
+  if (btn.querySelector('svg') && (btn.textContent.trim() === '' || text === '') && btn.classList.contains('btn-ghost')) {
+    showToast('Abrindo formulário de edição...');
+    return;
+  }
+});
+
+// ── LAUDO: Finalizar ───────────────────────────────────────────────────
+function finalizarLaudo() {
+  // Update stepper
+  const steps = document.querySelectorAll('#page-laudos .step');
+  steps.forEach((s, i) => {
+    s.classList.remove('current', 'done');
+    if (i < 3) s.classList.add('done');
+    if (i === 3) s.classList.add('current');
+  });
+
+  // Update badge
+  const badge = document.querySelector('#page-laudos .card-header .badge');
+  if (badge) {
+    badge.className = 'badge badge-green';
+    badge.innerHTML = '<span class="badge-dot"></span>Liberado';
+  }
+
+  // Update list item for Luna
+  const rows = document.querySelectorAll('#page-laudos tbody tr');
+  rows.forEach(row => {
+    if (row.textContent.includes('Luna')) {
+      const b = row.querySelector('.badge');
+      if (b) { b.className = 'badge badge-green'; b.innerHTML = '<span class="badge-dot"></span>Liberado'; }
+      const actionCell = row.cells[row.cells.length - 1];
+      if (actionCell) actionCell.innerHTML = '<button class="btn btn-ghost btn-sm">PDF</button>';
+    }
+  });
+
+  showToast('Laudo finalizado e liberado para a clínica!', 'green');
+}
+
+// ── ADD EXAME to table ─────────────────────────────────────────────────
+function addExameToTable() {
+  const tbody = document.querySelector('#page-exames table tbody');
+  if (!tbody) return;
+  const newRow = document.createElement('tr');
+  newRow.dataset.exameId = '0043';
+  newRow.innerHTML = `
+    <td style="color:var(--slate2)">#0043</td>
+    <td><b>Thor</b> / Carlos A.</td>
+    <td>Ultrassonografia Abdominal</td><td>PetLife</td><td>21/02/2026</td>
+    <td style="font-weight:600">R$ 180</td>
+    <td><span class="badge badge-amber">Aguardando</span></td>
+    <td><button class="btn btn-primary btn-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Laudo</button> <button class="btn btn-ghost btn-sm" onclick="showDeleteModal('exame','Thor — USG Abdominal', this)" title="Excluir"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button></td>`;
+  tbody.insertBefore(newRow, tbody.firstChild);
+  newRow.style.background = '#f0fdf4';
+  setTimeout(() => newRow.style.background = '', 2000);
+}
+
+// ── SHOW TOAST ────────────────────────────────────────────────────────
+function showToast(msg, type = 'default') {
+  const colors = { green: '#16a34a', blue: '#2563eb', default: '#334155' };
+  const t = document.createElement('div');
+  t.textContent = msg;
+  Object.assign(t.style, {
+    position: 'fixed', bottom: '24px', right: '24px', zIndex: '9999',
+    background: colors[type] || colors.default, color: '#fff',
+    padding: '10px 18px', borderRadius: '8px', fontSize: '13px',
+    fontWeight: '500', fontFamily: 'Inter,sans-serif',
+    boxShadow: '0 4px 16px rgba(0,0,0,.18)',
+    animation: 'slideUp .2s ease', maxWidth: '320px', lineHeight: '1.4'
+  });
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 2500);
+}
+
+// Inject toast animation
+const toastStyle = document.createElement('style');
+toastStyle.textContent = '@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}';
+document.head.appendChild(toastStyle);
+
+// ── MODAL: Faturamento detail ──────────────────────────────────────────
+function showExameModal() {
+  showModal('Detalhe do Faturamento', `
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="background:#f8fafc">
+        <th style="padding:8px 12px;text-align:left;border-bottom:1px solid #e2e8f0;font-size:11px;text-transform:uppercase;color:#64748b">Exame</th>
+        <th style="padding:8px 12px;text-align:left;border-bottom:1px solid #e2e8f0;font-size:11px;text-transform:uppercase;color:#64748b">Paciente</th>
+        <th style="padding:8px 12px;text-align:right;border-bottom:1px solid #e2e8f0;font-size:11px;text-transform:uppercase;color:#64748b">Valor</th>
+      </tr></thead>
+      <tbody>
+        <tr><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9">USG Abdominal</td><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9">Thor</td><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:600">R$ 180</td></tr>
+        <tr><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9">Ecocardiograma</td><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9">Luna</td><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:600">R$ 320</td></tr>
+        <tr><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9">Raio-X Tórax</td><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9">Bob</td><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:600">R$ 120</td></tr>
+        <tr style="background:#f0fdf4"><td style="padding:10px 12px;font-weight:700" colspan="2">Total</td><td style="padding:10px 12px;text-align:right;font-weight:800;color:#16a34a">R$ 620</td></tr>
+      </tbody>
+    </table>
+  `);
+}
+
+// ── MODAL: Histórico ────────────────────────────────────────────────────
+function showHistoricoModal(btn) {
+  const name = btn.closest('.patient-card')?.querySelector('.patient-name')?.textContent || 'Paciente';
+  showModal('Histórico de Exames — ' + name, `
+    <div style="display:flex;flex-direction:column;gap:0">
+      ${[
+        ['USG Abdominal','21/02/2026','Liberado','green','R$ 180'],
+        ['Raio-X Tórax','05/01/2026','Liberado','green','R$ 120'],
+        ['Ecocardiograma','10/12/2025','Liberado','green','R$ 320'],
+        ['ECG','03/11/2025','Liberado','green','R$ 140'],
+      ].map(([tipo,data,status,cor,val]) => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9">
+          <div><div style="font-weight:600;font-size:13px">${tipo}</div><div style="font-size:11px;color:#94a3b8">${data}</div></div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span class="badge badge-${cor}"><span class="badge-dot"></span>${status}</span>
+            <span style="font-weight:700;font-size:13px">${val}</span>
+          </div>
+        </div>`).join('')}
+    </div>
+  `);
+}
+
+// ── MODAL: Form Tutor/Paciente ──────────────────────────────────────────
+function showFormModal(type) {
+  const isTutor = type === 'tutor';
+  showModal(isTutor ? 'Cadastrar Novo Tutor' : 'Cadastrar Novo Paciente', `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      ${isTutor ? `
+        <div style="grid-column:1/-1" class="form-group"><label>Nome Completo *</label><input type="text" placeholder="Nome do tutor"></div>
+        <div class="form-group"><label>CPF *</label><input type="text" placeholder="000.000.000-00"></div>
+        <div class="form-group"><label>Telefone</label><input type="text" placeholder="(11) 99999-9999"></div>
+        <div class="form-group"><label>E-mail</label><input type="email" placeholder="email@exemplo.com"></div>
+        <div class="form-group"><label>Clínica *</label><select><option>PetLife</option><option>VetMax</option><option>AnimalCare</option></select></div>
+        <div style="grid-column:1/-1" class="form-group"><label>Endereço</label><input type="text" placeholder="Rua, número, cidade"></div>
+      ` : `
+        <div class="form-group"><label>Tutor *</label><select><option>Carlos Andrade</option><option>Maria Santos</option></select></div>
+        <div class="form-group"><label>Clínica *</label><select><option>PetLife</option><option>VetMax</option></select></div>
+        <div class="form-group"><label>Nome do Animal *</label><input type="text" placeholder="Nome"></div>
+        <div class="form-group"><label>Espécie</label><select><option>Cão</option><option>Gato</option><option>Outro</option></select></div>
+        <div class="form-group"><label>Raça</label><input type="text" placeholder="Ex: Golden Retriever"></div>
+        <div class="form-group"><label>Sexo</label><select><option>Macho</option><option>Fêmea</option></select></div>
+        <div class="form-group"><label>Data de Nascimento</label><input type="date"></div>
+        <div class="form-group"><label>Peso (kg)</label><input type="number" placeholder="0.0"></div>
+      `}
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal();showToast('${isTutor ? 'Tutor' : 'Paciente'} cadastrado com sucesso!','green')">Salvar</button>
+    </div>
+  `);
+}
+
+// ── PDF PREVIEW modal ──────────────────────────────────────────────────
+function showPDFPreview() {
+  showModal('Pré-visualização do Laudo', `
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;font-family:'Inter',sans-serif;font-size:13px;line-height:1.8;color:#334155;max-height:400px;overflow-y:auto">
+      <div style="text-align:center;margin-bottom:20px;border-bottom:2px solid #0f2744;padding-bottom:16px">
+        <div style="font-size:16px;font-weight:800;color:#0f2744">LAUDO DE ECOCARDIOGRAMA</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px">VetCare Pro — Diagnósticos Veterinários</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:12px;font-size:12px">
+        <div><b>Paciente:</b> Luna</div><div><b>Espécie/Raça:</b> Poodle, F</div>
+        <div><b>Tutor:</b> Maria Santos</div><div><b>Solicitante:</b> Dr. Bruno Lima — CRMV 7832</div>
+        <div><b>Data:</b> 21/02/2026</div><div><b>Clínica:</b> VetMax</div>
+      </div>
+      <p><b>Técnica:</b> Exame realizado em modo B, modo M e Doppler colorido, pulsátil e contínuo, utilizando transdutor setorial de 7,5 MHz.</p>
+      <br>
+      <p><b>Achados:</b></p>
+      <p>— Câmaras cardíacas com dimensões dentro dos limites normais para a espécie e porte.</p>
+      <p>— Função sistólica do ventrículo esquerdo preservada (FS = 38%).</p>
+      <p>— Valvas com morfologia e mobilidade normais.</p>
+      <p>— Ausência de sinais de efusão pericárdica.</p>
+      <br>
+      <p><b>Conclusão:</b> Exame ecocardiográfico dentro dos limites da normalidade para a espécie.</p>
+      <div style="margin-top:24px;border-top:1px solid #e2e8f0;padding-top:16px;text-align:right;font-size:12px">
+        <div style="font-weight:700;font-style:italic;font-size:15px;color:#0f2744">Dr. Rafael Mendes</div>
+        <div style="color:#64748b">Médico Veterinário · CRMV-SP 12345</div>
+        <div style="color:#94a3b8;font-size:11px">21/02/2026</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Fechar</button>
+      <button class="btn btn-primary" onclick="closeModal();showToast('PDF gerado com sucesso!','green')">Baixar PDF</button>
+    </div>
+  `);
+}
+
+// ── EXPAND TUTOR (Ver detalhes) ────────────────────────────────────────
+function expandTutor(btn) {
+  const card = btn.closest('.card');
+  const existingExpanded = document.getElementById('tutor-ms-expanded');
+  if (existingExpanded) {
+    existingExpanded.remove();
+    btn.textContent = 'Ver detalhes';
+    return;
+  }
+  btn.textContent = 'Fechar';
+  const expanded = document.createElement('div');
+  expanded.id = 'tutor-ms-expanded';
+  expanded.style.cssText = 'padding:0 20px 20px';
+  expanded.innerHTML = `
+    <div class="patient-grid" style="margin-top:0">
+      <div class="patient-card" style="border-color:var(--blue2)">
+        <div class="patient-header">
+          <div class="species-icon" style="background:var(--sky);color:var(--blue)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="4"/><path d="M3 21v-4a8 8 0 0 1 16 0v4"/><path d="M8 11V7"/><path d="M14 11V7"/></svg>
+          </div>
+          <div><div class="patient-name">Luna</div><div class="patient-breed">Poodle · Fêmea</div></div>
+        </div>
+        <div class="patient-info">
+          <div class="info-item"><div class="info-label">Idade</div><div class="info-value">3 anos</div></div>
+          <div class="info-item"><div class="info-label">Peso</div><div class="info-value">4,5 kg</div></div>
+          <div class="info-item"><div class="info-label">Exames</div><div class="info-value">4 total</div></div>
+          <div class="info-item"><div class="info-label">Último</div><div class="info-value">21/02/26</div></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:6px">
+          <button class="btn btn-primary btn-sm" style="flex:1">+ Exame</button>
+          <button class="btn btn-ghost btn-sm">Histórico</button>
+        </div>
+      </div>
+    </div>`;
+  card.appendChild(expanded);
+}
+
+// ── MODAL: Novo Exame ─────────────────────────────────────────────────
+function showModalExame() {
+  showModal('Registrar Novo Exame', `
+    <div class="section-bar"><h3>Identificação</h3></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Clínica <span class="req">*</span></label><select><option>Selecionar clínica...</option><option selected>Clínica PetLife</option><option>VetMax</option><option>AnimalCare</option></select></div>
+      <div class="form-group"><label>Veterinário Solicitante <span class="req">*</span></label><select><option>Selecionar veterinário...</option><option selected>Dra. Ana Oliveira — CRMV 5421</option><option>Dr. Bruno Lima — CRMV 7832</option></select></div>
+    </div>
+    <div class="section-bar"><h3>Tutor e Paciente</h3></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Tutor (Responsável) <span class="req">*</span></label><select><option>Buscar ou selecionar tutor...</option><option selected>Carlos Andrade — CPF 123.456.789-00</option><option>Maria Santos</option></select><span class="input-hint">O tutor deve estar cadastrado previamente</span></div>
+      <div class="form-group"><label>Paciente (Animal) <span class="req">*</span></label><select><option>Selecionar animal do tutor...</option><option selected>Thor — Golden Retriever, M, 4 anos</option><option>Rex — Labrador, M, 2 anos</option></select></div>
+    </div>
+    <div class="section-bar"><h3>Serviço</h3></div>
+    <div class="form-grid-3">
+      <div class="form-group"><label>Tipo de Exame <span class="req">*</span></label><select><option>Selecionar...</option><option selected>Ultrassonografia Abdominal</option><option>Ecocardiograma</option><option>Eletrocardiograma</option><option>Raio-X Tórax</option></select></div>
+      <div class="form-group"><label>Data de Realização <span class="req">*</span></label><input type="date" value="2026-02-21"></div>
+      <div class="form-group"><label>Valor Cobrado (R$)</label><input type="number" value="180.00" placeholder="0,00"><span class="input-hint">Valor padrão: R$ 180,00</span></div>
+    </div>
+    <div class="form-group" style="margin-top:14px"><label>Observações</label><textarea placeholder="Informações clínicas relevantes...">Paciente com histórico de vômitos frequentes.</textarea></div>
+    <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal();showToast('Exame registrado com sucesso!','green');addExameToTable()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Registrar Exame</button>
+    </div>
+  `);
+}
+
+// ── MODAL: Nova Clínica ───────────────────────────────────────────────
+function showModalClinica() {
+  showModal('Nova Clínica', `
+    <div class="form-grid">
+      <div class="form-group full"><label>Nome da Clínica <span class="req">*</span></label><input type="text" placeholder="Nome fantasia..."></div>
+      <div class="form-group"><label>CNPJ</label><input type="text" placeholder="00.000.000/0001-00"></div>
+      <div class="form-group"><label>Telefone</label><input type="text" placeholder="(11) 99999-0000"></div>
+      <div class="form-group"><label>E-mail (acesso portal) <span class="req">*</span></label><input type="email" placeholder="contato@clinica.com.br"></div>
+      <div class="form-group"><label>Senha de Acesso <span class="req">*</span></label><input type="password" placeholder="••••••••"></div>
+      <div class="form-group full"><label>Endereço</label><input type="text" placeholder="Rua, número, cidade"></div>
+    </div>
+    <div class="section-bar" style="margin-top:18px"><h3>Veterinário Solicitante Vinculado</h3></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Nome <span class="req">*</span></label><input type="text" placeholder="Dr(a). Nome Completo"></div>
+      <div class="form-group"><label>CRMV <span class="req">*</span></label><input type="text" placeholder="CRMV-SP 00000"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal();showToast('Clínica cadastrada com sucesso!','green')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Salvar Clínica</button>
+    </div>
+  `);
+}
+
+// ── MODAL: Novo Serviço ───────────────────────────────────────────────
+function showModalServico() {
+  showModal('Novo Serviço', `
+    <div class="form-grid">
+      <div class="form-group full"><label>Nome do Serviço <span class="req">*</span></label><input type="text" placeholder="Ex: Ultrassonografia Abdominal"></div>
+      <div class="form-group"><label>Categoria</label><select><option>Imagem</option><option>Cardio</option><option>Radiologia</option><option>Clínico</option></select></div>
+      <div class="form-group"><label>Valor Padrão (R$)</label><input type="number" placeholder="180.00"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal();showToast('Serviço cadastrado com sucesso!','green')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Salvar Serviço</button>
+    </div>
+  `);
+}
+
+// ── MODAL: Novo Veterinário Solicitante ───────────────────────────────
+function showModalVet() {
+  showModal('Novo Veterinário Solicitante', `
+    <div class="form-grid">
+      <div class="form-group full"><label>Nome Completo <span class="req">*</span></label><input type="text" placeholder="Dr(a). Nome Completo"></div>
+      <div class="form-group"><label>CRMV <span class="req">*</span></label><input type="text" placeholder="CRMV-SP 00000"></div>
+      <div class="form-group"><label>Clínica Vinculada <span class="req">*</span></label><select><option>Selecionar...</option><option>Clínica PetLife</option><option>VetMax</option><option>AnimalCare</option><option>ClinVet Sul</option></select></div>
+      <div class="form-group"><label>Telefone</label><input type="text" placeholder="(11) 99999-9999"></div>
+      <div class="form-group"><label>E-mail</label><input type="email" placeholder="veterinario@email.com"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal();showToast('Veterinário cadastrado com sucesso!','green')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Salvar</button>
+    </div>
+  `);
+}
+
+// ── MODAL: Confirmação de Exclusão ───────────────────────────────────
+let _deleteTarget = null;
+function showDeleteModal(tipo, itemName, btn) {
+  _deleteTarget = btn;
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-overlay';
+  overlay.className = 'modal-overlay modal-delete';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Excluir ${tipo}?</div>
+        <button class="modal-close" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">Tem certeza que deseja excluir <strong>${itemName}</strong>? Esta ação não pode ser desfeita.</p>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+          <button class="btn btn-danger" onclick="confirmDelete()">Excluir</button>
+        </div>
+      </div>
+    </div>`;
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.body.appendChild(overlay);
+}
+
+function confirmDelete() {
+  if (_deleteTarget) {
+    const row = _deleteTarget.closest('tr');
+    if (row) {
+      row.style.background = '#fee2e2';
+      row.style.transition = 'opacity .3s';
+      row.style.opacity = '0';
+      setTimeout(() => row.remove(), 300);
+      showToast('Item excluído com sucesso', 'green');
+    }
+  }
+  closeModal();
+  _deleteTarget = null;
+}
+
+// ── GRÁFICOS FINANCEIRO ──────────────────────────────────────────────
+let _chartPizza, _chartTorres, _chartBarras;
+function initFinanceCharts() {
+  if (_chartPizza) return; // já inicializado
+  const colors = ['#2563eb','#0d9488','#d97706','#16a34a','#dc2626','#6366f1'];
+  // Pizza: Faturamento por serviço
+  const ctxPizza = document.getElementById('chartPizza');
+  if (ctxPizza) {
+    _chartPizza = new Chart(ctxPizza, {
+      type: 'doughnut',
+      data: {
+        labels: ['Ecocardiograma','USG Abdominal','Raio-X','ECG','USG Ocular','Outros'],
+        datasets: [{ data: [7040, 5400, 2400, 1800, 1200, 400], backgroundColor: colors, borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+  // Torres (barras verticais): Faturamento por clínica
+  const ctxTorres = document.getElementById('chartTorres');
+  if (ctxTorres) {
+    _chartTorres = new Chart(ctxTorres, {
+      type: 'bar',
+      data: {
+        labels: ['PetLife','VetMax','AnimalCare','ClinVet Sul'],
+        datasets: [{ label: 'R$', data: [5280, 4760, 2340, 1440], backgroundColor: ['#2563eb','#0d9488','#d97706','#16a34a'], borderRadius: 6 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+    });
+  }
+  // Barras: Exames por mês
+  const ctxBarras = document.getElementById('chartBarras');
+  if (ctxBarras) {
+    _chartBarras = new Chart(ctxBarras, {
+      type: 'bar',
+      data: {
+        labels: ['Ago','Set','Out','Nov','Dez','Jan'],
+        datasets: [{ label: 'Exames', data: [62, 71, 68, 75, 78, 87], backgroundColor: 'rgba(37,99,235,.7)', borderRadius: 6 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  }
+}
+
+// ── MODAL SYSTEM ───────────────────────────────────────────────────────
+function showModal(title, body) {
+  closeModal();
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-overlay';
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">${title}</div>
+        <button class="modal-close" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="modal-body">${body}</div>
+    </div>`;
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.body.appendChild(overlay);
+}
+
+function closeModal() {
+  const m = document.getElementById('modal-overlay');
+  if (m) m.remove();
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────
+document.querySelectorAll('.search-box input').forEach(input => {
+  input.addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    const page = this.closest('.page') || document;
+    const rows = page.querySelectorAll('tbody tr, .patient-card, .pc');
+    rows.forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(query) || query === '' ? '' : 'none';
+    });
+  });
+});
+
+// ── LOGIN ─────────────────────────────────────────────────────────────
+function selectProfile(profile, el) {
+  _currentProfile = profile;
+  document.querySelectorAll('.profile-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  const emailField = document.getElementById('login-email');
+  emailField.value = profile === 'admin' ? 'admin@vetcare.com' : 'contato@petlife.com';
+}
+
+function doLogin() {
+  const screen = document.getElementById('login-screen');
+  screen.classList.add('hidden');
+  setTimeout(() => screen.style.display = 'none', 400);
+
+  const sidebar = document.querySelector('.sidebar');
+  const userCard = sidebar.querySelector('.user-card');
+  const avatar = userCard.querySelector('.avatar');
+  const userName = userCard.querySelector('.user-name');
+  const userRole = userCard.querySelector('.user-role');
+
+  if (_currentProfile === 'clinica') {
+    sidebar.classList.add('clinic-mode');
+    avatar.textContent = 'PL';
+    avatar.style.background = 'linear-gradient(135deg, var(--teal), var(--green))';
+    userName.textContent = 'Clínica PetLife';
+    userRole.textContent = 'Acesso Clínica';
+    goTo('portal-clinica', null);
+  } else {
+    sidebar.classList.remove('clinic-mode');
+    avatar.textContent = 'DR';
+    avatar.style.background = '';
+    userName.textContent = 'Dr. Rafael Mendes';
+    userRole.textContent = 'Administrador · CRMV 12345';
+    goTo('dashboard', null);
+  }
+}
+
+function doLogout() {
+  const screen = document.getElementById('login-screen');
+  screen.style.display = '';
+  screen.classList.remove('hidden');
+  document.querySelector('.sidebar').classList.remove('clinic-mode');
+}
+
+// ── RELATÓRIOS CHARTS ────────────────────────────────────────────────
+let _chartRelProd, _chartRelTipo;
+function initRelatoriosCharts() {
+  if (_chartRelProd) return;
+  const ctxProd = document.getElementById('chartRelProd');
+  if (ctxProd) {
+    _chartRelProd = new Chart(ctxProd, {
+      type: 'bar',
+      data: {
+        labels: ['Set','Out','Nov','Dez','Jan','Fev'],
+        datasets: [
+          { label: 'Exames', data: [71,68,75,78,87,92], backgroundColor: 'rgba(37,99,235,.7)', borderRadius: 6 },
+          { label: 'Laudos', data: [65,62,70,74,82,88], backgroundColor: 'rgba(13,148,136,.6)', borderRadius: 6 }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+    });
+  }
+  const ctxTipo = document.getElementById('chartRelTipo');
+  if (ctxTipo) {
+    _chartRelTipo = new Chart(ctxTipo, {
+      type: 'doughnut',
+      data: {
+        labels: ['Ecocardiograma','USG Abdominal','Raio-X','ECG','USG Ocular','Outros'],
+        datasets: [{ data: [38,42,28,22,18,17], backgroundColor: ['#2563eb','#0d9488','#d97706','#16a34a','#6366f1','#94a3b8'], borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-item').forEach(btn => {
+  const oc = btn.getAttribute('onclick') || '';
+  const match = oc.match(/goTo\(['"]([^'"]+)['"]/);
+  if (match) btn.dataset.page = match[1];
+});
+
+document.getElementById('topbar-cta').dataset.ctaPage = 'exames';
+
+// Cadastro tab switching
+const cadastroTabs = document.getElementById('cadastro-tabs');
+if (cadastroTabs) {
+  cadastroTabs.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      cadastroTabs.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      const target = this.dataset.tab;
+      document.querySelectorAll('#page-cadastros .tab-content').forEach(c => c.style.display = 'none');
+      const el = document.getElementById('tab-' + target);
+      if (el) el.style.display = '';
+    });
+  });
+}
+
+// Make user card clickable for logout
+document.querySelector('.user-card').addEventListener('click', function() {
+  if (confirm('Deseja sair do sistema?')) doLogout();
+});
+</script>
 </body>
 </html>
