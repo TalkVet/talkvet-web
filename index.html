@@ -1634,6 +1634,19 @@
 // ── PAGE NAVIGATION ────────────────────────────────────────────────────
 let _currentProfile = 'admin';
 
+const PATH_TO_PAGE = {
+  '': 'dashboard', '/': 'dashboard', '/dashboard': 'dashboard',
+  '/exames': 'exames', '/laudos': 'laudos', '/laudo': 'laudos', '/financeiro': 'financeiro',
+  '/relatorios': 'relatorios', '/cadastros': 'cadastros',
+  '/pacientes': 'pacientes', '/servicos': 'servicos',
+  '/portal-clinica': 'portal-clinica'
+};
+const PAGE_TO_PATH = {
+  dashboard: '/dashboard', exames: '/exames', laudos: '/laudos',
+  financeiro: '/financeiro', relatorios: '/relatorios', cadastros: '/cadastros',
+  pacientes: '/pacientes', servicos: '/servicos', 'portal-clinica': '/portal-clinica'
+};
+
 const PAGE_META = {
   dashboard:        { title: 'Dashboard',        cta: 'Novo Exame',      ctaPage: 'exames'     },
   exames:           { title: 'Exames',           cta: 'Registrar Exame', ctaPage: 'exames'     },
@@ -1677,6 +1690,18 @@ function goTo(id, triggerEl) {
   // Init charts when entering specific pages
   if (id === 'financeiro') initFinanceCharts();
   if (id === 'relatorios') initRelatoriosCharts();
+
+  // Update URL path
+  const path = PAGE_TO_PATH[id] || '/dashboard';
+  if (window.location.pathname !== path) {
+    history.pushState({ page: id }, '', path);
+  }
+}
+
+function syncRouteFromPath() {
+  const path = window.location.pathname.replace(/\/$/, '') || '/';
+  const page = PATH_TO_PAGE[path] || PATH_TO_PAGE[path + '/'] || 'dashboard';
+  goTo(page, null);
 }
 
 // CTA button click
@@ -2321,7 +2346,7 @@ function doLogin() {
     avatar.style.background = '';
     userName.textContent = 'Dr. Rafael Mendes';
     userRole.textContent = 'Administrador · CRMV 12345';
-    goTo('dashboard', null);
+    syncRouteFromPath();
   }
 }
 
@@ -2391,6 +2416,22 @@ if (cadastroTabs) {
 document.querySelector('.user-card').addEventListener('click', function() {
   if (confirm('Deseja sair do sistema?')) doLogout();
 });
+
+// Pular login para demo/export (html.to.design): use ?demo=1 ou ?h2d=1 na URL
+const params = new URLSearchParams(window.location.search);
+if (params.get('demo') || params.get('h2d')) {
+  _currentProfile = 'admin';
+  doLogin();
+  syncRouteFromPath();
+}
+
+// Sincronizar rota ao carregar (acesso direto a /exames, etc)
+window.addEventListener('load', function() {
+  const loginEl = document.getElementById('login-screen');
+  if (loginEl && loginEl.style.display === 'none') syncRouteFromPath();
+});
+
+window.addEventListener('popstate', function() { syncRouteFromPath(); });
 </script>
 </body>
 </html>
