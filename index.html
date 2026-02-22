@@ -2322,7 +2322,13 @@ function selectProfile(profile, el) {
   emailField.value = profile === 'admin' ? 'admin@vetcare.com' : 'contato@petlife.com';
 }
 
+const AUTH_KEY = 'vetcare_auth';
+const PROFILE_KEY = 'vetcare_profile';
+
 function doLogin() {
+  localStorage.setItem(AUTH_KEY, '1');
+  localStorage.setItem(PROFILE_KEY, _currentProfile);
+
   const screen = document.getElementById('login-screen');
   screen.classList.add('hidden');
   setTimeout(() => screen.style.display = 'none', 400);
@@ -2351,6 +2357,8 @@ function doLogin() {
 }
 
 function doLogout() {
+  localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem(PROFILE_KEY);
   const screen = document.getElementById('login-screen');
   screen.style.display = '';
   screen.classList.remove('hidden');
@@ -2417,10 +2425,11 @@ document.querySelector('.user-card').addEventListener('click', function() {
   if (confirm('Deseja sair do sistema?')) doLogout();
 });
 
-// Pular login para demo/export (html.to.design): use ?demo=1 ou ?h2d=1 na URL
+// Pular login: localStorage (após 1º login) ou ?demo=1 / ?h2d=1 na URL
 const params = new URLSearchParams(window.location.search);
-if (params.get('demo') || params.get('h2d')) {
-  _currentProfile = 'admin';
+const skipLogin = params.get('demo') || params.get('h2d') || localStorage.getItem(AUTH_KEY);
+if (skipLogin) {
+  _currentProfile = localStorage.getItem(PROFILE_KEY) || params.get('profile') || 'admin';
   doLogin();
   syncRouteFromPath();
 }
