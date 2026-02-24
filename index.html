@@ -310,6 +310,16 @@
     min-height: 200px; padding: 16px;
     font-size: 13px; line-height: 1.7; color: var(--text2);
   }
+  .laudo-contenteditable[placeholder]:empty:before {
+    content: attr(placeholder);
+    color: var(--slate2);
+    pointer-events: none;
+    display: block;
+    font-style: italic;
+  }
+  .laudo-contenteditable p {
+    margin: 0 0 10px 0;
+  }
 
   /* ── STATUS STEPPER ───────────────────────────────────────── */
   .stepper { display: flex; align-items: center; gap: 0; margin: 16px 0; }
@@ -721,14 +731,14 @@
     <!-- ── LAUDOS ───────────────────────────────────────────────── -->
     <div class="page" id="page-laudos">
       <div class="two-col">
-        <!-- Editor -->
-        <div class="card">
+        <!-- Editor (só aparece quando um exame é selecionado na lista) -->
+        <div class="card" id="laudos-editor-card" style="display:none">
           <div class="card-header">
             <div>
               <div class="card-title">Editor de Laudo</div>
-              <div class="card-subtitle">Exame #0041 — Luna / Ecocardiograma</div>
+              <div class="card-subtitle" id="laudos-editor-subtitle">—</div>
             </div>
-            <span class="badge badge-blue">Em Elaboração</span>
+            <span class="badge badge-blue" id="laudos-editor-badge">Em Elaboração</span>
           </div>
           <div class="card-body" style="padding:0">
             <!-- Stepper -->
@@ -741,47 +751,109 @@
               </div>
             </div>
 
-            <!-- Info paciente -->
-            <div style="padding:0 20px 14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:var(--bg);border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-top:14px;padding-top:12px;padding-bottom:12px">
-              <div><div style="font-size:10.5px;color:var(--slate2);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Paciente</div><div style="font-size:13px;font-weight:700;margin-top:2px">Luna</div></div>
-              <div><div style="font-size:10.5px;color:var(--slate2);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Espécie / Raça</div><div style="font-size:13px;font-weight:600;margin-top:2px">Poodle F</div></div>
-              <div><div style="font-size:10.5px;color:var(--slate2);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Tutor</div><div style="font-size:13px;font-weight:600;margin-top:2px">Maria Santos</div></div>
-              <div><div style="font-size:10.5px;color:var(--slate2);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Solicitante</div><div style="font-size:13px;font-weight:600;margin-top:2px">Dr. Bruno Lima</div></div>
-            </div>
-
+            <!-- Info paciente (moved inside the document for better visualization) -->
             <!-- Toolbar -->
-            <div class="editor-toolbar">
-              <button class="tool-btn"><b>B</b></button>
-              <button class="tool-btn"><i>I</i></button>
-              <button class="tool-btn"><u>U</u></button>
-              <div class="tool-sep"></div>
-              <button class="tool-btn">H1</button>
-              <button class="tool-btn">H2</button>
-              <div class="tool-sep"></div>
-              <button class="tool-btn">≡</button>
-              <button class="tool-btn">•—</button>
-              <div class="tool-sep"></div>
-              <button class="tool-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Imagem</button>
-              <button class="tool-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg> Modelo</button>
+            <div class="editor-toolbar" style="position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--border); border-top: 1px solid var(--border); margin-top: 14px; background: white; padding: 8px 20px;">
+              <div style="display:flex; gap:4px; align-items:center;">
+                <button class="tool-btn"><b>B</b></button>
+                <button class="tool-btn"><i>I</i></button>
+                <button class="tool-btn"><u>U</u></button>
+                <div class="tool-sep"></div>
+                <button class="tool-btn">H1</button>
+                <button class="tool-btn">H2</button>
+                <div class="tool-sep"></div>
+                <button class="tool-btn">≡</button>
+                <button class="tool-btn">•—</button>
+                <div class="tool-sep"></div>
+                <button class="tool-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Imagem</button>
+              </div>
+              <div style="flex:1"></div>
+              <div style="display:flex; gap: 6px; align-items:center;">
+                <span style="font-size: 11px; color: var(--text); font-weight: 600;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:-2px;"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg> Modelos Rápidos:</span>
+                <button class="btn btn-outline btn-sm" style="height: 26px; padding: 0 8px; font-size: 11px;" onclick="insertTemplate('normal-usg')">USG Normal</button>
+                <button class="btn btn-outline btn-sm" style="height: 26px; padding: 0 8px; font-size: 11px;" onclick="insertTemplate('normal-rx')">RX Tórax Normal</button>
+              </div>
             </div>
-            <div class="editor-body" contenteditable="true">
-              <p><strong>LAUDO DE ECOCARDIOGRAMA</strong></p>
-              <p>&nbsp;</p>
-              <p><strong>Técnica:</strong> Exame realizado em modo B, modo M e Doppler colorido, pulsátil e contínuo, utilizando transdutor setorial de 7,5 MHz. Paciente posicionada em decúbito lateral direito e esquerdo.</p>
-              <p>&nbsp;</p>
-              <p><strong>Achados:</strong></p>
-              <p>- Câmaras cardíacas com dimensões dentro dos limites normais para a espécie e porte.</p>
-              <p>- Função sistólica do ventrículo esquerdo preservada (FS = 38%).</p>
-              <p>- Valvas mitral, tricúspide, aórtica e pulmonar com morfologia e mobilidade normais.</p>
-              <p>- Ausência de sinais de efusão pericárdica.</p>
-              <p>&nbsp;</p>
-              <p><strong>Conclusão:</strong> Exame ecocardiográfico dentro dos limites da normalidade para a espécie.</p>
+            
+            <div style="background:var(--bg); padding: 32px 20px; height: 500px; overflow-y: auto;">
+              <!-- Document Paper -->
+              <div style="background: white; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); width: 100%; max-width: 800px; margin: 0 auto; padding: 40px; min-height: 800px; box-sizing: border-box;">
+                
+                <!-- Document Header -->
+                <div style="border-bottom: 2px solid var(--navy); padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
+                  <div>
+                    <h2 style="font-size: 20px; font-weight: 800; color: var(--navy); margin: 0 0 4px 0;">LAUDO VETERINÁRIO</h2>
+                    <div style="font-size: 12px; font-weight: 600; color: var(--slate2); text-transform: uppercase; letter-spacing: 0.05em;" id="laudo-doc-tipo">—</div>
+                  </div>
+                  <div style="text-align: right; font-size: 11px; color: var(--slate2);">
+                    Data de Emissão: <strong id="laudo-doc-data">23/02/2026</strong><br>
+                    Exame Nº <strong id="laudo-doc-id">—</strong>
+                  </div>
+                </div>
+                
+                <!-- Document Meta -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; font-size: 12px; background: var(--bg); padding: 16px; border-radius: 6px; border: 1px solid var(--border);">
+                  <div><strong style="color:var(--slate2)">Paciente:</strong> <span id="laudo-paciente" style="font-weight:600;color:var(--text)">—</span></div>
+                  <div><strong style="color:var(--slate2)">Espécie/Raça:</strong> <span id="laudo-especie" style="font-weight:600;color:var(--text)">—</span></div>
+                  <div><strong style="color:var(--slate2)">Tutor:</strong> <span id="laudo-tutor" style="font-weight:600;color:var(--text)">—</span></div>
+                  <div><strong style="color:var(--slate2)">Solicitante:</strong> <span id="laudo-solicitante" style="font-weight:600;color:var(--text)">—</span></div>
+                </div>
+                
+                <!-- Document Body Blocks -->
+                <div class="editor-blocks" id="laudos-editor-body" style="display: flex; flex-direction: column; gap: 24px;">
+                  
+                  <div class="laudo-section">
+                    <h3 style="font-size: 13px; font-weight: 700; color: var(--navy); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Indicação Clínica / Histórico</h3>
+                    <div class="laudo-contenteditable" contenteditable="true" style="min-height: 40px; outline: none; font-size: 13px; line-height: 1.6; color: var(--text);" placeholder="Digite a indicação ou histórico do paciente aqui..."></div>
+                  </div>
+                  
+                  <div class="laudo-section">
+                    <h3 style="font-size: 13px; font-weight: 700; color: var(--navy); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Técnica e Descrição dos Achados</h3>
+                    <div class="laudo-contenteditable" id="laudo-block-achados" contenteditable="true" style="min-height: 140px; outline: none; font-size: 13px; line-height: 1.6; color: var(--text);" placeholder="Descreva os achados do exame detalhadamente..."></div>
+                  </div>
+                  
+                  <div class="laudo-section">
+                    <h3 style="font-size: 13px; font-weight: 700; color: var(--navy); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Impressão Diagnóstica / Conclusão</h3>
+                    <div class="laudo-contenteditable" id="laudo-block-conclusao" contenteditable="true" style="min-height: 80px; outline: none; font-size: 13px; line-height: 1.6; color: var(--text); font-weight: 600;" placeholder="Escreva a conclusão ou impressão diagnóstica..."></div>
+                  </div>
+                  
+                  <div class="laudo-section">
+                    <h3 style="font-size: 13px; font-weight: 700; color: var(--navy); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Observações Adicionais</h3>
+                    <div class="laudo-contenteditable" contenteditable="true" style="min-height: 40px; outline: none; font-size: 13px; line-height: 1.6; color: var(--text);" placeholder="Quaisquer notas relevantes, limitações do exame, etc."></div>
+                  </div>
+                  
+                </div>
+                
+                <!-- Signature Area -->
+                <div style="margin-top: 80px; text-align: center; display: flex; flex-direction: column; align-items: center;">
+                  <div style="width: 250px; border-bottom: 1px solid var(--border2); margin-bottom: 12px;"></div>
+                  <div style="font-family: 'Inter', sans-serif; color: var(--navy); font-weight: 700; font-style: italic; font-size: 17px;">Dr. Rafael Mendes</div>
+                  <div style="font-size: 11px; color: var(--slate2); margin-top: 4px;">Médico Veterinário · CRMV-SP 12345</div>
+                </div>
+
+              </div>
             </div>
           </div>
           <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--bg)">
             <button class="btn btn-outline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar rascunho</button>
             <button class="btn btn-outline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Pré-visualizar</button>
             <button class="btn btn-primary"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Finalizar e Liberar</button>
+          </div>
+        </div>
+
+        <!-- Estado vazio: nenhum exame selecionado (padrão ao abrir Laudos) -->
+        <div class="card" id="laudos-empty-state" style="min-height: 800px; background: linear-gradient(180deg, var(--white) 0%, var(--bg) 100%); border: 1px dashed var(--border2); display: none;">
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height: 100%; min-height: 800px;">
+            <div style="width: 100px; height: 100px; background: var(--sky); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; border: 8px solid var(--white); box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <h3 style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 700; color: var(--navy2); margin-bottom: 12px;">Pronto para laudar?</h3>
+            <p style="font-size:14px; color:var(--slate2); max-width:380px; text-align:center; line-height:1.6; margin-bottom: 32px;">Selecione um exame na lista de <strong>Laudos Recentes</strong> ao lado para começar a elaborar ou editar o documento. Você também pode acessar a aba de Exames.</p>
+            
+            <button class="btn btn-primary" onclick="goTo('exames', document.querySelector('[onclick*=\'exames\']'))" style="padding: 10px 24px; font-size: 14px; height: auto;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              Ver todos os Exames
+            </button>
           </div>
         </div>
 
@@ -816,7 +888,7 @@
                       <div style="font-size:11px;color:var(--slate2)">VetMax · 21/02/2026</div>
                     </td>
                     <td style="padding:12px 16px"><span class="badge badge-blue">Em laudo</span></td>
-                    <td style="padding:12px 16px"><button class="btn btn-outline btn-sm">Editar</button></td>
+                    <td style="padding:12px 16px"><button class="btn btn-outline btn-sm" onclick="openLaudoEditor({ exame: '0041', paciente: 'Luna', especie: 'Poodle F', tutor: 'Maria Santos', solicitante: 'Dr. Bruno Lima', tipo: 'Ecocardiograma', isEdit: true })">Editar</button></td>
                   </tr>
                   <tr>
                     <td style="padding:12px 16px">
@@ -824,7 +896,7 @@
                       <div style="font-size:11px;color:var(--slate2)">PetLife · 21/02/2026</div>
                     </td>
                     <td style="padding:12px 16px"><span class="badge badge-amber">Aguardando</span></td>
-                    <td style="padding:12px 16px"><button class="btn btn-primary btn-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Criar</button></td>
+                    <td style="padding:12px 16px"><button class="btn btn-primary btn-sm" onclick="openLaudoEditor({ exame: '0042', paciente: 'Thor', especie: 'Golden Retriever M', tutor: 'Carlos Andrade', solicitante: 'Dra. Ana Oliveira', tipo: 'USG Abdominal', isEdit: false })"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Criar</button></td>
                   </tr>
                 </tbody>
               </table>
@@ -1584,12 +1656,12 @@ function goTo(id, triggerEl) {
   // Init charts when entering specific pages
   if (id === 'financeiro') initFinanceCharts();
   if (id === 'relatorios') initRelatoriosCharts();
+  if (id === 'laudos') showLaudosEmptyState();
 
-  // Update URL path (preserva ?profile= se existir)
+  // Update URL path (preserva todos os parametros)
   const path = PAGE_TO_PATH[id] || '/dashboard';
-  const params = new URLSearchParams(window.location.search);
-  const profileParam = params.get('profile');
-  const fullPath = profileParam ? path + '?profile=' + profileParam : path;
+  const currentSearch = window.location.search;
+  const fullPath = path + currentSearch;
   if (window.location.pathname + window.location.search !== fullPath) {
     history.pushState({ page: id }, '', fullPath);
   }
@@ -1802,6 +1874,69 @@ document.addEventListener('click', function(e) {
     return;
   }
 });
+
+// ── LAUDOS: abrir editor (exame selecionado na lista ou vindo de Exames) ─
+
+function openLaudoEditor(data) {
+  const card = document.getElementById('laudos-editor-card');
+  const empty = document.getElementById('laudos-empty-state');
+  if (!card || !empty) return;
+  empty.style.display = 'none';
+  card.style.display = 'block';
+
+  // Header and title info
+  document.getElementById('laudos-editor-subtitle').textContent = 'Exame #' + data.exame + ' — ' + data.paciente + ' / ' + data.tipo;
+  
+  // Document specific
+  if(document.getElementById('laudo-doc-id')) document.getElementById('laudo-doc-id').textContent = data.exame;
+  if(document.getElementById('laudo-doc-tipo')) document.getElementById('laudo-doc-tipo').textContent = data.tipo;
+  
+  // Document Meta
+  if(document.getElementById('laudo-paciente')) document.getElementById('laudo-paciente').textContent = data.paciente;
+  if(document.getElementById('laudo-especie')) document.getElementById('laudo-especie').textContent = data.especie;
+  if(document.getElementById('laudo-tutor')) document.getElementById('laudo-tutor').textContent = data.tutor;
+  if(document.getElementById('laudo-solicitante')) document.getElementById('laudo-solicitante').textContent = data.solicitante;
+
+  const badge = document.getElementById('laudos-editor-badge');
+  badge.className = 'badge ' + (data.isEdit ? 'badge-blue' : 'badge-amber');
+  badge.textContent = data.isEdit ? 'Em Elaboração' : 'Novo';
+
+  // Clear or fill blocks based on edit vs create
+  const blocks = document.querySelectorAll('.laudo-contenteditable');
+  if (blocks.length > 0) {
+    blocks.forEach(b => b.innerHTML = ''); // Clear all first
+    
+    if (data.isEdit && data.tipo === 'Ecocardiograma') {
+      const achados = document.getElementById('laudo-block-achados');
+      const conclusao = document.getElementById('laudo-block-conclusao');
+      if(achados) achados.innerHTML = '<p>- Câmaras cardíacas com dimensões dentro dos limites normais.</p><p>- Função sistólica do VD/VE preservada.</p><p>- Ausência de efusão pericárdica.</p>';
+      if(conclusao) conclusao.innerHTML = '<p>Exame ecocardiográfico sem alterações significativas ao momento da avaliação.</p>';
+    }
+  }
+}
+
+function insertTemplate(type) {
+  const achados = document.getElementById('laudo-block-achados');
+  const conclusao = document.getElementById('laudo-block-conclusao');
+  
+  if (type === 'normal-usg') {
+    if(achados) achados.innerHTML = '<p><b>Fígado:</b> dimensões normais, contornos regulares, margens preservadas.</p><p><b>Vesícula Biliar:</b> repleta, paredes finas regulares. Sem conteúdo luminal.</p><p><b>Baço:</b> ecotextura homogênea, sem esplenomegalia.</p><p><b>Rins:</b> simétricos, relação cortiço-medular preservada, de definição adequada.</p><p><b>Bexiga:</b> moderadamente repleta, urina anecóica, sem espessamento parietal.</p>';
+    if(conclusao) conclusao.innerHTML = '<p>Exame ultrassonográfico abdominal sem alterações ultrassonográficas significativas ao momento do exame.</p>';
+  } else if (type === 'normal-rx') {
+    if(achados) achados.innerHTML = '<p><b>Caixa Torácica:</b> Estruturas ósseas sem evidências de lesões. Hemidiafragmas regulares e íntegros.</p><p><b>Campos Pulmonares:</b> Transparência radiográfica mantida, sem consolidações.</p><p><b>Silhueta Cardíaca:</b> Relação VHS dentro dos padrões de normalidade. Contornos normais.</p><p><b>Mediastino:</b> Sem alargamentos evidentes.</p>';
+    if(conclusao) conclusao.innerHTML = '<p>Exame radiográfico de tórax denotando estruturas avaliadas com padrão de normalidade.</p>';
+  }
+  
+  if(typeof showToast === 'function') showToast('Modelo inserido com sucesso!', 'green');
+}
+
+// Ao entrar em Laudos, mostrar estado vazio (nenhum exame selecionado)
+function showLaudosEmptyState() {
+  const card = document.getElementById('laudos-editor-card');
+  const empty = document.getElementById('laudos-empty-state');
+  if (card) card.style.display = 'none';
+  if (empty) empty.style.display = '';
+}
 
 // ── LAUDO: Finalizar ───────────────────────────────────────────────────
 function finalizarLaudo() {
@@ -2291,8 +2426,18 @@ if (cadastroTabs) {
 syncRouteFromPath();
 window.addEventListener('popstate', function() { syncRouteFromPath(); });
 
-// FIGMA: abrir um modal por padrão na tela (como se tivesse clicado no botão)
-setTimeout(function() { showModalExame(); }, 100);
+// FIGMA: abrir modais dinamicamente baseados na URL (ex: ?modal_exame=true)
+const urlParams = new URLSearchParams(window.location.search);
+setTimeout(function() {
+  if (urlParams.get('modal_exame') === 'true') showModalExame();
+  else if (urlParams.get('modal_clinica') === 'true') showModalClinica();
+  else if (urlParams.get('modal_servico') === 'true') showModalServico();
+  else if (urlParams.get('modal_vet') === 'true') showModalVet();
+  else if (urlParams.get('modal_paciente') === 'true') showFormModal('paciente');
+  else if (urlParams.get('modal_tutor') === 'true') showFormModal('tutor');
+  else if (urlParams.get('modal_delete') === 'true') showDeleteModal('exemplo', 'Item de Exemplo', document.body);
+  else if (urlParams.get('modal_historico') === 'true') showHistoricoModal();
+}, 200);
 </script>
 </body>
 </html>
