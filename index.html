@@ -945,19 +945,19 @@
                   <td><span class="badge badge-green">Pago</span></td>
                   <td><button class="btn btn-ghost btn-sm">Ver</button></td>
                 </tr>
-                <tr>
+                <tr data-fatura="animalcare">
                   <td><b>AnimalCare</b></td>
                   <td>18</td>
                   <td style="font-weight:700;color:var(--text)">R$ 2.340,00</td>
-                  <td><span class="badge badge-amber">Pendente</span></td>
-                  <td><button class="btn btn-primary btn-sm">Cobrar</button></td>
+                  <td><span class="badge badge-amber fatura-status">Pendente</span></td>
+                  <td><button class="btn btn-primary btn-sm btn-fatura-action" onclick="marcarFaturaPago(this)">Marcar como pago</button></td>
                 </tr>
-                <tr>
+                <tr data-fatura="clinvet">
                   <td><b>ClinVet Sul</b></td>
                   <td>9</td>
                   <td style="font-weight:700;color:var(--text)">R$ 1.440,00</td>
-                  <td><span class="badge badge-amber">Pendente</span></td>
-                  <td><button class="btn btn-primary btn-sm">Cobrar</button></td>
+                  <td><span class="badge badge-amber fatura-status">Pendente</span></td>
+                  <td><button class="btn btn-primary btn-sm btn-fatura-action" onclick="marcarFaturaPago(this)">Marcar como pago</button></td>
                 </tr>
               </tbody>
             </table>
@@ -1503,6 +1503,31 @@
 // ── PAGE NAVIGATION ────────────────────────────────────────────────────
 let _currentProfile = 'admin';
 
+function applyProfile(profile) {
+  _currentProfile = profile === 'clinica' ? 'clinica' : 'admin';
+  const sidebar = document.querySelector('.sidebar');
+  const userCard = sidebar?.querySelector('.user-card');
+  if (!userCard) return;
+
+  const avatar = userCard.querySelector('.avatar');
+  const userName = userCard.querySelector('.user-name');
+  const userRole = userCard.querySelector('.user-role');
+
+  if (_currentProfile === 'clinica') {
+    sidebar.classList.add('clinic-mode');
+    avatar.textContent = 'PL';
+    avatar.style.background = 'linear-gradient(135deg, var(--teal), var(--green))';
+    userName.textContent = 'Clínica PetLife';
+    userRole.textContent = 'Acesso Clínica';
+  } else {
+    sidebar.classList.remove('clinic-mode');
+    avatar.textContent = 'DR';
+    avatar.style.background = '';
+    userName.textContent = 'Dr. Rafael Mendes';
+    userRole.textContent = 'Administrador · CRMV 12345';
+  }
+}
+
 const PATH_TO_PAGE = {
   '': 'dashboard', '/': 'dashboard', '/dashboard': 'dashboard',
   '/exames': 'exames', '/laudos': 'laudos', '/laudo': 'laudos', '/financeiro': 'financeiro',
@@ -1560,16 +1585,26 @@ function goTo(id, triggerEl) {
   if (id === 'financeiro') initFinanceCharts();
   if (id === 'relatorios') initRelatoriosCharts();
 
-  // Update URL path
+  // Update URL path (preserva ?profile= se existir)
   const path = PAGE_TO_PATH[id] || '/dashboard';
-  if (window.location.pathname !== path) {
-    history.pushState({ page: id }, '', path);
+  const params = new URLSearchParams(window.location.search);
+  const profileParam = params.get('profile');
+  const fullPath = profileParam ? path + '?profile=' + profileParam : path;
+  if (window.location.pathname + window.location.search !== fullPath) {
+    history.pushState({ page: id }, '', fullPath);
   }
 }
 
 function syncRouteFromPath() {
-  const path = window.location.pathname.replace(/\/$/, '') || '/';
-  const page = PATH_TO_PAGE[path] || PATH_TO_PAGE[path + '/'] || 'dashboard';
+  const params = new URLSearchParams(window.location.search);
+  const profileParam = params.get('profile');
+  if (profileParam) applyProfile(profileParam);
+
+  let path = window.location.pathname.replace(/\/$/, '') || '/';
+  let page = PATH_TO_PAGE[path] || PATH_TO_PAGE[path + '/'] || 'dashboard';
+  if (_currentProfile === 'clinica' && (path === '' || path === '/' || path === '/dashboard')) {
+    page = 'portal-clinica';
+  }
   goTo(page, null);
 }
 
@@ -2104,6 +2139,20 @@ function confirmDelete() {
   _deleteTarget = null;
 }
 
+// ── MARCAR FATURA COMO PAGA ──────────────────────────────────────────
+function marcarFaturaPago(btn) {
+  const row = btn.closest('tr');
+  if (!row) return;
+  const badge = row.querySelector('.fatura-status');
+  if (!badge || badge.textContent.trim() === 'Pago') return;
+  badge.className = 'badge badge-green fatura-status';
+  badge.textContent = 'Pago';
+  btn.className = 'btn btn-ghost btn-sm btn-fatura-action';
+  btn.textContent = 'Ver';
+  btn.removeAttribute('onclick');
+  showToast('Fatura marcada como paga', 'green');
+}
+
 // ── GRÁFICOS FINANCEIRO ──────────────────────────────────────────────
 let _chartPizza, _chartTorres, _chartBarras;
 function initFinanceCharts() {
@@ -2241,6 +2290,9 @@ if (cadastroTabs) {
 // Sincronizar rota ao carregar (acesso direto a /exames, etc)
 syncRouteFromPath();
 window.addEventListener('popstate', function() { syncRouteFromPath(); });
+
+// FIGMA: abrir um modal por padrão na tela (como se tivesse clicado no botão)
+setTimeout(function() { showModalExame(); }, 100);
 </script>
 </body>
 </html>

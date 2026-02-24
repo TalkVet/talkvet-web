@@ -1,0 +1,193 @@
+{
+  "name": "VetCare Pro - Sistema de Diagnósticos Veterinários",
+  "entities": [
+    {
+      "name": "Usuario",
+      "attributes": [
+        { "name": "id", "type": "uuid", "pk": true },
+        { "name": "email", "type": "varchar(255)", "unique": true },
+        { "name": "senha_hash", "type": "varchar(255)" },
+        { "name": "nome", "type": "varchar(255)" },
+        { "name": "perfil", "type": "enum('admin','clinica')" },
+        { "name": "crmv", "type": "varchar(20)" },
+        { "name": "clinica_id", "type": "uuid", "fk": "Clinica" }
+      ]
+    },
+    {
+      "name": "Clinica",
+      "attributes": [
+        { "name": "id", "type": "uuid", "pk": true },
+        { "name": "nome", "type": "varchar(255)" },
+        { "name": "cnpj", "type": "varchar(18)" },
+        { "name": "endereco", "type": "text" },
+        { "name": "telefone", "type": "varchar(20)" },
+        { "name": "email", "type": "varchar(255)" },
+        { "name": "ativo", "type": "boolean", "default": true }
+      ]
+    },
+    {
+      "name": "Tutor",
+      "attributes": [
+        { "name": "id", "type": "uuid", "pk": true },
+        { "name": "nome", "type": "varchar(255)" },
+        { "name": "cpf", "type": "varchar(14)" },
+        { "name": "telefone", "type": "varchar(20)" },
+        { "name": "email", "type": "varchar(255)" },
+        { "name": "clinica_id", "type": "uuid", "fk": "Clinica" }
+      ]
+    },
+    {
+      "name": "Paciente",
+      "attributes": [
+        { "name": "id", "type": "uuid", "pk": true },
+        { "name": "nome", "type": "varchar(255)" },
+        { "name": "especie", "type": "varchar(50)" },
+        { "name": "raca", "type": "varchar(100)" },
+        { "name": "sexo", "type": "enum('M','F')" },
+        { "name": "idade", "type": "varchar(50)" },
+        { "name": "peso", "type": "decimal(6,2)" },
+        { "name": "tutor_id", "type": "uuid", "fk": "Tutor" }
+      ]
+    },
+    {
+      "name": "Servico",
+      "attributes": [
+        { "name": "id", "type": "uuid", "pk": true },
+        { "name": "nome", "type": "varchar(255)" },
+        { "name": "categoria", "type": "varchar(100)" },
+        { "name": "valor_padrao", "type": "decimal(10,2)" },
+        { "name": "ativo", "type": "boolean", "default": true }
+      ]
+    },
+    {
+      "name": "Veterinario",
+      "attributes": [
+        { "name": "id", "type": "uuid", "pk": true },
+        { "name": "nome", "type": "varchar(255)" },
+        { "name": "crmv", "type": "varchar(20)" },
+        { "name": "clinica_id", "type": "uuid", "fk": "Clinica" }
+      ]
+    },
+    {
+      "name": "Exame",
+      "attributes": [
+        { "name": "id", "type": "uuid", "pk": true },
+        { "name": "numero", "type": "varchar(20)", "unique": true },
+        { "name": "paciente_id", "type": "uuid", "fk": "Paciente" },
+        { "name": "servico_id", "type": "uuid", "fk": "Servico" },
+        { "name": "clinica_id", "type": "uuid", "fk": "Clinica" },
+        { "name": "veterinario_id", "type": "uuid", "fk": "Veterinario" },
+        { "name": "data_registro", "type": "date" },
+        { "name": "valor", "type": "decimal(10,2)" },
+        { "name": "status_laudo", "type": "enum('aguardando','em_elaboracao','liberado')" }
+      ]
+    },
+    {
+      "name": "Laudo",
+      "attributes": [
+        { "name": "id", "type": "uuid", "pk": true },
+        { "name": "exame_id", "type": "uuid", "fk": "Exame", "unique": true },
+        { "name": "conteudo", "type": "text" },
+        { "name": "status", "type": "enum('rascunho','liberado')" },
+        { "name": "data_liberacao", "type": "timestamp" },
+        { "name": "medico_responsavel", "type": "varchar(255)" }
+      ]
+    },
+    {
+      "name": "Fatura",
+      "attributes": [
+        { "name": "id", "type": "uuid", "pk": true },
+        { "name": "clinica_id", "type": "uuid", "fk": "Clinica" },
+        { "name": "mes_ref", "type": "integer" },
+        { "name": "ano_ref", "type": "integer" },
+        { "name": "valor_total", "type": "decimal(10,2)" },
+        { "name": "quantidade_exames", "type": "integer" },
+        { "name": "status", "type": "enum('pendente','pago')" },
+        { "name": "data_pagamento", "type": "timestamp" }
+      ]
+    },
+    {
+      "name": "ItemFatura",
+      "attributes": [
+        { "name": "id", "type": "uuid", "pk": true },
+        { "name": "fatura_id", "type": "uuid", "fk": "Fatura" },
+        { "name": "exame_id", "type": "uuid", "fk": "Exame" },
+        { "name": "valor", "type": "decimal(10,2)" }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "Clinica",
+      "to": "Usuario",
+      "cardinality": "1:N",
+      "description": "Uma clínica possui vários usuários"
+    },
+    {
+      "from": "Clinica",
+      "to": "Tutor",
+      "cardinality": "1:N",
+      "description": "Uma clínica possui vários tutores"
+    },
+    {
+      "from": "Clinica",
+      "to": "Veterinario",
+      "cardinality": "1:N",
+      "description": "Uma clínica possui vários veterinários"
+    },
+    {
+      "from": "Clinica",
+      "to": "Exame",
+      "cardinality": "1:N",
+      "description": "Uma clínica possui vários exames"
+    },
+    {
+      "from": "Clinica",
+      "to": "Fatura",
+      "cardinality": "1:N",
+      "description": "Uma clínica possui várias faturas"
+    },
+    {
+      "from": "Tutor",
+      "to": "Paciente",
+      "cardinality": "1:N",
+      "description": "Um tutor possui vários pacientes (animais)"
+    },
+    {
+      "from": "Paciente",
+      "to": "Exame",
+      "cardinality": "1:N",
+      "description": "Um paciente possui vários exames"
+    },
+    {
+      "from": "Servico",
+      "to": "Exame",
+      "cardinality": "1:N",
+      "description": "Um serviço possui vários exames"
+    },
+    {
+      "from": "Veterinario",
+      "to": "Exame",
+      "cardinality": "1:N",
+      "description": "Um veterinário solicita vários exames"
+    },
+    {
+      "from": "Exame",
+      "to": "Laudo",
+      "cardinality": "1:1",
+      "description": "Um exame possui um laudo"
+    },
+    {
+      "from": "Fatura",
+      "to": "ItemFatura",
+      "cardinality": "1:N",
+      "description": "Uma fatura possui vários itens"
+    },
+    {
+      "from": "Exame",
+      "to": "ItemFatura",
+      "cardinality": "1:1",
+      "description": "Um exame pode compor um item de fatura"
+    }
+  ]
+}

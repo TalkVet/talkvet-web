@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VetCare Pro - Diagrama ER</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px; font-family: system-ui, sans-serif; background: #f5f5f5; }
+    h1 { margin: 0 0 16px; color: #333; }
+    .container { background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .mermaid { display: flex; justify-content: center; overflow: auto; }
+    .mermaid svg { max-width: 100%; }
+    .actions { margin-top: 16px; display: flex; gap: 8px; }
+    .actions button { padding: 8px 16px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 14px; }
+    .actions button:hover { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>VetCare Pro — Diagrama ER</h1>
+    <div class="mermaid">
+erDiagram
+    Clinica ||--o{ Usuario : "possui"
+    Clinica ||--o{ Tutor : "possui"
+    Clinica ||--o{ Veterinario : "possui"
+    Clinica ||--o{ Exame : "realiza"
+    Clinica ||--o{ Fatura : "possui"
+    Tutor ||--o{ Paciente : "possui"
+    Paciente ||--o{ Exame : "realiza"
+    Servico ||--o{ Exame : "tipo"
+    Veterinario ||--o{ Exame : "solicita"
+    Exame ||--|| Laudo : "gera"
+    Fatura ||--o{ ItemFatura : "contém"
+    Exame ||--o| ItemFatura : "compõe"
+
+    Usuario {
+        uuid id PK
+        varchar email UK
+        varchar senha_hash
+        varchar nome
+        enum perfil
+        varchar crmv
+        uuid clinica_id FK
+    }
+
+    Clinica {
+        uuid id PK
+        varchar nome
+        varchar cnpj
+        text endereco
+        varchar telefone
+        varchar email
+        boolean ativo
+    }
+
+    Tutor {
+        uuid id PK
+        varchar nome
+        varchar cpf
+        varchar telefone
+        varchar email
+        uuid clinica_id FK
+    }
+
+    Paciente {
+        uuid id PK
+        varchar nome
+        varchar especie
+        varchar raca
+        enum sexo
+        varchar idade
+        decimal peso
+        uuid tutor_id FK
+    }
+
+    Servico {
+        uuid id PK
+        varchar nome
+        varchar categoria
+        decimal valor_padrao
+        boolean ativo
+    }
+
+    Veterinario {
+        uuid id PK
+        varchar nome
+        varchar crmv
+        uuid clinica_id FK
+    }
+
+    Exame {
+        uuid id PK
+        varchar numero UK
+        uuid paciente_id FK
+        uuid servico_id FK
+        uuid clinica_id FK
+        uuid veterinario_id FK
+        date data_registro
+        decimal valor
+        enum status_laudo
+    }
+
+    Laudo {
+        uuid id PK
+        uuid exame_id FK UK
+        text conteudo
+        enum status
+        timestamp data_liberacao
+        varchar medico_responsavel
+    }
+
+    Fatura {
+        uuid id PK
+        uuid clinica_id FK
+        int mes_ref
+        int ano_ref
+        decimal valor_total
+        int quantidade_exames
+        enum status
+        timestamp data_pagamento
+    }
+
+    ItemFatura {
+        uuid id PK
+        uuid fatura_id FK
+        uuid exame_id FK
+        decimal valor
+    }
+    </div>
+    <div class="actions">
+      <button onclick="window.print()">Imprimir / Salvar PDF</button>
+    </div>
+  </div>
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default', er: { diagramPadding: 20 } });
+  </script>
+</body>
+</html>
